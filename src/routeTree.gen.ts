@@ -10,33 +10,129 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppFocusRouteImport } from './routes/_app.focus'
+import { Route as AppPlanRouteImport } from './routes/_app.plan'
+import { Route as AppReviewRouteImport } from './routes/_app.review'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppTasksRouteImport } from './routes/_app.tasks'
+import { Route as AppTodayRouteImport } from './routes/_app.today'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFocusRoute = AppFocusRouteImport.update({
+  id: '/focus',
+  path: '/focus',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlanRoute = AppPlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReviewRoute = AppReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTasksRoute = AppTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTodayRoute = AppTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/focus': typeof AppFocusRoute
+  '/plan': typeof AppPlanRoute
+  '/review': typeof AppReviewRoute
+  '/settings': typeof AppSettingsRoute
+  '/tasks': typeof AppTasksRoute
+  '/today': typeof AppTodayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/focus': typeof AppFocusRoute
+  '/plan': typeof AppPlanRoute
+  '/review': typeof AppReviewRoute
+  '/settings': typeof AppSettingsRoute
+  '/tasks': typeof AppTasksRoute
+  '/today': typeof AppTodayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/focus': typeof AppFocusRoute
+  '/_app/plan': typeof AppPlanRoute
+  '/_app/review': typeof AppReviewRoute
+  '/_app/settings': typeof AppSettingsRoute
+  '/_app/tasks': typeof AppTasksRoute
+  '/_app/today': typeof AppTodayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/focus'
+    | '/plan'
+    | '/review'
+    | '/settings'
+    | '/tasks'
+    | '/today'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/focus'
+    | '/plan'
+    | '/review'
+    | '/settings'
+    | '/tasks'
+    | '/today'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_app/dashboard'
+    | '/_app/focus'
+    | '/_app/plan'
+    | '/_app/review'
+    | '/_app/settings'
+    | '/_app/tasks'
+    | '/_app/today'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +144,90 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/focus': {
+      id: '/_app/focus'
+      path: '/focus'
+      fullPath: '/focus'
+      preLoaderRoute: typeof AppFocusRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/plan': {
+      id: '/_app/plan'
+      path: '/plan'
+      fullPath: '/plan'
+      preLoaderRoute: typeof AppPlanRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/review': {
+      id: '/_app/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof AppReviewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/tasks': {
+      id: '/_app/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof AppTasksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/today': {
+      id: '/_app/today'
+      path: '/today'
+      fullPath: '/today'
+      preLoaderRoute: typeof AppTodayRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppFocusRoute: typeof AppFocusRoute
+  AppPlanRoute: typeof AppPlanRoute
+  AppReviewRoute: typeof AppReviewRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppTasksRoute: typeof AppTasksRoute
+  AppTodayRoute: typeof AppTodayRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppDashboardRoute: AppDashboardRoute,
+  AppFocusRoute: AppFocusRoute,
+  AppPlanRoute: AppPlanRoute,
+  AppReviewRoute: AppReviewRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppTasksRoute: AppTasksRoute,
+  AppTodayRoute: AppTodayRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
