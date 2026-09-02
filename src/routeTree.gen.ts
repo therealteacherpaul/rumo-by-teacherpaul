@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppFocusRouteImport } from './routes/_app.focus'
+import { Route as AppPlanRouteImport } from './routes/_app.plan'
+import { Route as AppTasksRouteImport } from './routes/_app.tasks'
 import { Route as AppTodayRouteImport } from './routes/_app.today'
 
 const IndexRoute = IndexRouteImport.update({
@@ -22,6 +25,21 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppFocusRoute = AppFocusRouteImport.update({
+  id: '/focus',
+  path: '/focus',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlanRoute = AppPlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTasksRoute = AppTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTodayRoute = AppTodayRouteImport.update({
   id: '/today',
   path: '/today',
@@ -30,24 +48,40 @@ const AppTodayRoute = AppTodayRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/focus': typeof AppFocusRoute
+  '/plan': typeof AppPlanRoute
+  '/tasks': typeof AppTasksRoute
   '/today': typeof AppTodayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/focus': typeof AppFocusRoute
+  '/plan': typeof AppPlanRoute
+  '/tasks': typeof AppTasksRoute
   '/today': typeof AppTodayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/_app/focus': typeof AppFocusRoute
+  '/_app/plan': typeof AppPlanRoute
+  '/_app/tasks': typeof AppTasksRoute
   '/_app/today': typeof AppTodayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/today'
+  fullPaths: '/' | '/focus' | '/plan' | '/tasks' | '/today'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/today'
-  id: '__root__' | '/' | '/_app' | '/_app/today'
+  to: '/' | '/focus' | '/plan' | '/tasks' | '/today'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_app/focus'
+    | '/_app/plan'
+    | '/_app/tasks'
+    | '/_app/today'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -71,6 +105,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/focus': {
+      id: '/_app/focus'
+      path: '/focus'
+      fullPath: '/focus'
+      preLoaderRoute: typeof AppFocusRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/plan': {
+      id: '/_app/plan'
+      path: '/plan'
+      fullPath: '/plan'
+      preLoaderRoute: typeof AppPlanRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/tasks': {
+      id: '/_app/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof AppTasksRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/today': {
       id: '/_app/today'
       path: '/today'
@@ -82,10 +137,16 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppFocusRoute: typeof AppFocusRoute
+  AppPlanRoute: typeof AppPlanRoute
+  AppTasksRoute: typeof AppTasksRoute
   AppTodayRoute: typeof AppTodayRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppFocusRoute: AppFocusRoute,
+  AppPlanRoute: AppPlanRoute,
+  AppTasksRoute: AppTasksRoute,
   AppTodayRoute: AppTodayRoute,
 }
 
