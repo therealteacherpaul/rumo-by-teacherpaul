@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppFocusRouteImport } from './routes/_app.focus'
 import { Route as AppPlanRouteImport } from './routes/_app.plan'
+import { Route as AppReviewRouteImport } from './routes/_app.review'
 import { Route as AppTasksRouteImport } from './routes/_app.tasks'
 import { Route as AppTodayRouteImport } from './routes/_app.today'
 
@@ -25,6 +27,11 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFocusRoute = AppFocusRouteImport.update({
   id: '/focus',
   path: '/focus',
@@ -33,6 +40,11 @@ const AppFocusRoute = AppFocusRouteImport.update({
 const AppPlanRoute = AppPlanRouteImport.update({
   id: '/plan',
   path: '/plan',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReviewRoute = AppReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTasksRoute = AppTasksRouteImport.update({
@@ -48,15 +60,19 @@ const AppTodayRoute = AppTodayRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof AppDashboardRoute
   '/focus': typeof AppFocusRoute
   '/plan': typeof AppPlanRoute
+  '/review': typeof AppReviewRoute
   '/tasks': typeof AppTasksRoute
   '/today': typeof AppTodayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof AppDashboardRoute
   '/focus': typeof AppFocusRoute
   '/plan': typeof AppPlanRoute
+  '/review': typeof AppReviewRoute
   '/tasks': typeof AppTasksRoute
   '/today': typeof AppTodayRoute
 }
@@ -64,22 +80,27 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/_app/dashboard': typeof AppDashboardRoute
   '/_app/focus': typeof AppFocusRoute
   '/_app/plan': typeof AppPlanRoute
+  '/_app/review': typeof AppReviewRoute
   '/_app/tasks': typeof AppTasksRoute
   '/_app/today': typeof AppTodayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/focus' | '/plan' | '/tasks' | '/today'
+  fullPaths:
+    '/' | '/dashboard' | '/focus' | '/plan' | '/review' | '/tasks' | '/today'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/focus' | '/plan' | '/tasks' | '/today'
+  to: '/' | '/dashboard' | '/focus' | '/plan' | '/review' | '/tasks' | '/today'
   id:
     | '__root__'
     | '/'
     | '/_app'
+    | '/_app/dashboard'
     | '/_app/focus'
     | '/_app/plan'
+    | '/_app/review'
     | '/_app/tasks'
     | '/_app/today'
   fileRoutesById: FileRoutesById
@@ -105,6 +126,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/focus': {
       id: '/_app/focus'
       path: '/focus'
@@ -117,6 +145,13 @@ declare module '@tanstack/react-router' {
       path: '/plan'
       fullPath: '/plan'
       preLoaderRoute: typeof AppPlanRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/review': {
+      id: '/_app/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof AppReviewRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/tasks': {
@@ -137,15 +172,19 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppDashboardRoute: typeof AppDashboardRoute
   AppFocusRoute: typeof AppFocusRoute
   AppPlanRoute: typeof AppPlanRoute
+  AppReviewRoute: typeof AppReviewRoute
   AppTasksRoute: typeof AppTasksRoute
   AppTodayRoute: typeof AppTodayRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppDashboardRoute: AppDashboardRoute,
   AppFocusRoute: AppFocusRoute,
   AppPlanRoute: AppPlanRoute,
+  AppReviewRoute: AppReviewRoute,
   AppTasksRoute: AppTasksRoute,
   AppTodayRoute: AppTodayRoute,
 }
