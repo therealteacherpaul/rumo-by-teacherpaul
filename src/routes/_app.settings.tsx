@@ -110,7 +110,7 @@ function SettingsPage() {
             ["privacidade", "Privacidade"],
             ["integracoes", "Integrações"],
           ].map(([value, label]) => (
-            <TabsTrigger key={value} value={value}>
+            <TabsTrigger key={value} value={value!}>
               {label}
             </TabsTrigger>
           ))}

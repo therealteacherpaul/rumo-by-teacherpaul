@@ -41,7 +41,7 @@ const durations = [25, 50, 90];
 
 function FocusPage() {
   const { data: sessions = [] } = useDemoQuery(["focus", "sessions"], () => focusSessions);
-  const [taskId, setTaskId] = useState(tasks[0].id);
+  const [taskId, setTaskId] = useState(tasks[0]!.id);
   const [duration, setDuration] = useState(50);
 
   const selected = tasks.find((t) => t.id === taskId);
