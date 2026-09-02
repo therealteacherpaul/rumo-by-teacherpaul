@@ -15,6 +15,7 @@ import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppFocusRouteImport } from './routes/_app.focus'
 import { Route as AppPlanRouteImport } from './routes/_app.plan'
 import { Route as AppReviewRouteImport } from './routes/_app.review'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppTasksRouteImport } from './routes/_app.tasks'
 import { Route as AppTodayRouteImport } from './routes/_app.today'
 
@@ -47,6 +48,11 @@ const AppReviewRoute = AppReviewRouteImport.update({
   path: '/review',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTasksRoute = AppTasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/focus': typeof AppFocusRoute
   '/plan': typeof AppPlanRoute
   '/review': typeof AppReviewRoute
+  '/settings': typeof AppSettingsRoute
   '/tasks': typeof AppTasksRoute
   '/today': typeof AppTodayRoute
 }
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/focus': typeof AppFocusRoute
   '/plan': typeof AppPlanRoute
   '/review': typeof AppReviewRoute
+  '/settings': typeof AppSettingsRoute
   '/tasks': typeof AppTasksRoute
   '/today': typeof AppTodayRoute
 }
@@ -84,15 +92,31 @@ export interface FileRoutesById {
   '/_app/focus': typeof AppFocusRoute
   '/_app/plan': typeof AppPlanRoute
   '/_app/review': typeof AppReviewRoute
+  '/_app/settings': typeof AppSettingsRoute
   '/_app/tasks': typeof AppTasksRoute
   '/_app/today': typeof AppTodayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/dashboard' | '/focus' | '/plan' | '/review' | '/tasks' | '/today'
+    | '/'
+    | '/dashboard'
+    | '/focus'
+    | '/plan'
+    | '/review'
+    | '/settings'
+    | '/tasks'
+    | '/today'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/focus' | '/plan' | '/review' | '/tasks' | '/today'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/focus'
+    | '/plan'
+    | '/review'
+    | '/settings'
+    | '/tasks'
+    | '/today'
   id:
     | '__root__'
     | '/'
@@ -101,6 +125,7 @@ export interface FileRouteTypes {
     | '/_app/focus'
     | '/_app/plan'
     | '/_app/review'
+    | '/_app/settings'
     | '/_app/tasks'
     | '/_app/today'
   fileRoutesById: FileRoutesById
@@ -154,6 +179,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReviewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/tasks': {
       id: '/_app/tasks'
       path: '/tasks'
@@ -176,6 +208,7 @@ interface AppRouteChildren {
   AppFocusRoute: typeof AppFocusRoute
   AppPlanRoute: typeof AppPlanRoute
   AppReviewRoute: typeof AppReviewRoute
+  AppSettingsRoute: typeof AppSettingsRoute
   AppTasksRoute: typeof AppTasksRoute
   AppTodayRoute: typeof AppTodayRoute
 }
@@ -185,6 +218,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFocusRoute: AppFocusRoute,
   AppPlanRoute: AppPlanRoute,
   AppReviewRoute: AppReviewRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppTasksRoute: AppTasksRoute,
   AppTodayRoute: AppTodayRoute,
 }
