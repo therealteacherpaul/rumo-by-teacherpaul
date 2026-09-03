@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "npx --yes wrangler@4.128.0 --cwd .output dev",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write ."
   },
   "overrides": {
