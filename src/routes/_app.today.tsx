@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useDemoQuery } from "@/hooks/use-demo-query";
+import { DEMO_TIME_ZONE, formatDateLabel } from "@/lib/date-time";
 import {
   categoryName,
   energyCheckin,
@@ -21,6 +22,9 @@ import {
 } from "@/lib/demo-data";
 
 export const Route = createFileRoute("/_app/today")({
+  loader: () => ({
+    dateLabel: formatDateLabel(new Date(), DEMO_TIME_ZONE),
+  }),
   head: () => ({
     meta: [
       { title: "Hoje — RUMO by Teacher Paul" },
@@ -39,19 +43,17 @@ export const Route = createFileRoute("/_app/today")({
   component: TodayPage,
 });
 
-const dateLabel = new Intl.DateTimeFormat("pt-BR", {
-  weekday: "long",
-  day: "2-digit",
-  month: "long",
-}).format(new Date());
-
 function TodayPage() {
+  const { dateLabel } = Route.useLoaderData();
   const { data: appointments = [] } = useDemoQuery(["today", "appointments"], () => todayAppointments);
   const { data: priorities = [] } = useDemoQuery(["today", "priorities"], () => todayPriorities);
   const [energy, setEnergy] = useState(energyCheckin.level);
 
   const done = priorities.filter((p) => p.done).length;
-  const ratio = Math.round((plannedVsDoneToday.realizado / plannedVsDoneToday.planejado) * 100);
+  const ratio =
+    plannedVsDoneToday.planejado > 0
+      ? Math.round((plannedVsDoneToday.realizado / plannedVsDoneToday.planejado) * 100)
+      : 0;
 
   return (
     <div className="space-y-8">

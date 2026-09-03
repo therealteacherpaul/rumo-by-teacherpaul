@@ -52,9 +52,8 @@ const tooltipStyle = {
 
 function DashboardPage() {
   const { data } = useDemoQuery(["dashboard"], () => dashboardData);
-  if (!data) return null;
 
-  const pct = (a: number, b: number) => Math.round((a / b) * 100);
+  const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : 0);
 
   return (
     <div className="space-y-8">

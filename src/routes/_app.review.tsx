@@ -67,7 +67,6 @@ function ListBlock({
 
 function ReviewPage() {
   const { data } = useDemoQuery(["review"], () => reviewData);
-  if (!data) return null;
 
   return (
     <div className="space-y-8">

@@ -43,6 +43,8 @@ function PlanPage() {
 
   const committed = capacity.reduce((s, d) => s + d.committedH, 0);
   const total = capacity.reduce((s, d) => s + d.capacityH, 0);
+  const committedProgress = total > 0 ? (committed / total) * 100 : 0;
+  const committedPct = Math.round(committedProgress);
 
   return (
     <div className="space-y-8">
@@ -64,9 +66,9 @@ function PlanPage() {
         <StatCard
           label="Comprometido"
           value={`${committed}h`}
-          hint={`${Math.round((committed / total) * 100)}% da capacidade`}
+          hint={`${committedPct}% da capacidade`}
           icon={<CalendarRange className="size-4" />}
-          progress={(committed / total) * 100}
+          progress={committedProgress}
         />
         <StatCard
           label="Blocos de foco"
@@ -128,7 +130,7 @@ function PlanPage() {
         <SectionCard title="Capacidade estimada por dia" description="Comprometido versus disponível.">
           <ul className="space-y-4">
             {capacity.map((d) => {
-              const pct = Math.round((d.committedH / d.capacityH) * 100);
+              const pct = d.capacityH > 0 ? Math.round((d.committedH / d.capacityH) * 100) : 0;
               const over = d.committedH > d.capacityH;
               return (
                 <li key={d.day}>
