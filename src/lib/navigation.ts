@@ -1,12 +1,4 @@
-import {
-  CalendarRange,
-  CheckSquare,
-  Gauge,
-  ListChecks,
-  Settings,
-  Sun,
-  Timer,
-} from "lucide-react";
+import { CalendarRange, CheckSquare, Gauge, ListChecks, Settings, Sun, Timer } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export type NavItem = {

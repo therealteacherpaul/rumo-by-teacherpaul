@@ -10,13 +10,7 @@ type Props = {
   showDemoBadge?: boolean;
 };
 
-export function PageHeader({
-  eyebrow,
-  title,
-  description,
-  actions,
-  showDemoBadge = true,
-}: Props) {
+export function PageHeader({ eyebrow, title, description, actions, showDemoBadge = true }: Props) {
   return (
     <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:items-end sm:justify-between">
       <div className="min-w-0">

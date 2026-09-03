@@ -84,7 +84,10 @@ function PlanPage() {
         />
       </div>
 
-      <SectionCard title="Visão semanal" description="Compromissos fixos, blocos de foco e tempo pessoal.">
+      <SectionCard
+        title="Visão semanal"
+        description="Compromissos fixos, blocos de foco e tempo pessoal."
+      >
         <div className="-mx-2 overflow-x-auto px-2">
           <div className="grid min-w-[840px] grid-cols-7 gap-3">
             {weekDays.map((day, index) => (
@@ -127,7 +130,10 @@ function PlanPage() {
       </SectionCard>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <SectionCard title="Capacidade estimada por dia" description="Comprometido versus disponível.">
+        <SectionCard
+          title="Capacidade estimada por dia"
+          description="Comprometido versus disponível."
+        >
           <ul className="space-y-4">
             {capacity.map((d) => {
               const pct = d.capacityH > 0 ? Math.round((d.committedH / d.capacityH) * 100) : 0;

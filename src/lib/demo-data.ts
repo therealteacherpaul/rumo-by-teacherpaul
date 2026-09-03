@@ -105,9 +105,27 @@ export type Priority = {
 };
 
 export const todayPriorities: Priority[] = [
-  { id: "p1", title: "Fechar arquitetura do onboarding do RUMO", category: "rumo", estimateMin: 90, done: true },
-  { id: "p2", title: "Revisar PR de autenticação do Spring", category: "spring", estimateMin: 60, done: false },
-  { id: "p3", title: "Estudar módulo de testes da Rocketseat", category: "rocketseat", estimateMin: 45, done: false },
+  {
+    id: "p1",
+    title: "Fechar arquitetura do onboarding do RUMO",
+    category: "rumo",
+    estimateMin: 90,
+    done: true,
+  },
+  {
+    id: "p2",
+    title: "Revisar PR de autenticação do Spring",
+    category: "spring",
+    estimateMin: 60,
+    done: false,
+  },
+  {
+    id: "p3",
+    title: "Estudar módulo de testes da Rocketseat",
+    category: "rocketseat",
+    estimateMin: 45,
+    done: false,
+  },
 ];
 
 export type Task = {
@@ -122,15 +140,96 @@ export type Task = {
 };
 
 export const tasks: Task[] = [
-  { id: "t1", title: "Definir escopo do MVP do RUMO", project: "RUMO — Fundação", category: "rumo", priority: "Alta", due: "2026-09-02", estimateMin: 90, status: "Em andamento" },
-  { id: "t2", title: "Revisar PR de autenticação", project: "Spring — Plataforma", category: "spring", priority: "Alta", due: "2026-09-02", estimateMin: 60, status: "A fazer" },
-  { id: "t3", title: "Módulo de testes automatizados", project: "Rocketseat — Trilha", category: "rocketseat", priority: "Média", due: "2026-09-03", estimateMin: 45, status: "A fazer" },
-  { id: "t4", title: "Entregar trabalho de Engenharia de Software", project: "Faculdade — 5º período", category: "faculdade", priority: "Alta", due: "2026-09-05", estimateMin: 180, status: "A fazer" },
-  { id: "t5", title: "Preparar roteiro da mentoria em grupo", project: "Mentorias", category: "mentorias", priority: "Média", due: "2026-09-04", estimateMin: 50, status: "Em andamento" },
-  { id: "t6", title: "Ajustar exportação de agenda", project: "Smart Schedule", category: "smart-schedule", priority: "Baixa", due: "2026-09-08", estimateMin: 40, status: "Aguardando" },
-  { id: "t7", title: "Compras da semana", project: "Casa", category: "domesticas", priority: "Baixa", due: "2026-09-06", estimateMin: 60, status: "A fazer" },
-  { id: "t8", title: "Marcar almoço com a família", project: "Pessoal", category: "familia", priority: "Média", due: "2026-09-06", estimateMin: 15, status: "Concluída" },
-  { id: "t9", title: "Treino de força — inferiores", project: "Saúde", category: "exercicio", priority: "Média", due: "2026-09-03", estimateMin: 50, status: "A fazer" },
+  {
+    id: "t1",
+    title: "Definir escopo do MVP do RUMO",
+    project: "RUMO — Fundação",
+    category: "rumo",
+    priority: "Alta",
+    due: "2026-09-02",
+    estimateMin: 90,
+    status: "Em andamento",
+  },
+  {
+    id: "t2",
+    title: "Revisar PR de autenticação",
+    project: "Spring — Plataforma",
+    category: "spring",
+    priority: "Alta",
+    due: "2026-09-02",
+    estimateMin: 60,
+    status: "A fazer",
+  },
+  {
+    id: "t3",
+    title: "Módulo de testes automatizados",
+    project: "Rocketseat — Trilha",
+    category: "rocketseat",
+    priority: "Média",
+    due: "2026-09-03",
+    estimateMin: 45,
+    status: "A fazer",
+  },
+  {
+    id: "t4",
+    title: "Entregar trabalho de Engenharia de Software",
+    project: "Faculdade — 5º período",
+    category: "faculdade",
+    priority: "Alta",
+    due: "2026-09-05",
+    estimateMin: 180,
+    status: "A fazer",
+  },
+  {
+    id: "t5",
+    title: "Preparar roteiro da mentoria em grupo",
+    project: "Mentorias",
+    category: "mentorias",
+    priority: "Média",
+    due: "2026-09-04",
+    estimateMin: 50,
+    status: "Em andamento",
+  },
+  {
+    id: "t6",
+    title: "Ajustar exportação de agenda",
+    project: "Smart Schedule",
+    category: "smart-schedule",
+    priority: "Baixa",
+    due: "2026-09-08",
+    estimateMin: 40,
+    status: "Aguardando",
+  },
+  {
+    id: "t7",
+    title: "Compras da semana",
+    project: "Casa",
+    category: "domesticas",
+    priority: "Baixa",
+    due: "2026-09-06",
+    estimateMin: 60,
+    status: "A fazer",
+  },
+  {
+    id: "t8",
+    title: "Marcar almoço com a família",
+    project: "Pessoal",
+    category: "familia",
+    priority: "Média",
+    due: "2026-09-06",
+    estimateMin: 15,
+    status: "Concluída",
+  },
+  {
+    id: "t9",
+    title: "Treino de força — inferiores",
+    project: "Saúde",
+    category: "exercicio",
+    priority: "Média",
+    due: "2026-09-03",
+    estimateMin: 50,
+    status: "A fazer",
+  },
 ];
 
 export type WeekBlock = {
@@ -146,21 +245,141 @@ export type WeekBlock = {
 export const weekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
 export const weekBlocks: WeekBlock[] = [
-  { id: "w1", day: 0, start: "09:00", end: "12:00", title: "Spring — desenvolvimento", category: "spring", type: "fixo" },
-  { id: "w2", day: 0, start: "14:00", end: "15:00", title: "Mentoria individual", category: "mentorias", type: "fixo" },
-  { id: "w3", day: 0, start: "19:30", end: "21:30", title: "Faculdade", category: "faculdade", type: "fixo" },
-  { id: "w4", day: 1, start: "07:00", end: "08:00", title: "Exercício", category: "exercicio", type: "pessoal" },
-  { id: "w5", day: 1, start: "09:00", end: "11:00", title: "Foco — RUMO", category: "rumo", type: "foco" },
-  { id: "w6", day: 1, start: "19:30", end: "21:30", title: "Faculdade", category: "faculdade", type: "fixo" },
-  { id: "w7", day: 2, start: "09:00", end: "12:00", title: "Spring — desenvolvimento", category: "spring", type: "fixo" },
-  { id: "w8", day: 2, start: "13:00", end: "14:30", title: "Foco — Rocketseat", category: "rocketseat", type: "foco" },
-  { id: "w9", day: 3, start: "09:00", end: "11:00", title: "Foco — Smart Schedule", category: "smart-schedule", type: "foco" },
-  { id: "w10", day: 3, start: "18:00", end: "19:00", title: "Deslocamento", category: "deslocamento", type: "fixo" },
-  { id: "w11", day: 4, start: "09:00", end: "12:00", title: "Spring — desenvolvimento", category: "spring", type: "fixo" },
-  { id: "w12", day: 4, start: "16:00", end: "17:30", title: "Mentorias em grupo", category: "mentorias", type: "fixo" },
-  { id: "w13", day: 5, start: "10:00", end: "12:00", title: "Tarefas domésticas", category: "domesticas", type: "pessoal" },
-  { id: "w14", day: 5, start: "15:00", end: "18:00", title: "Família", category: "familia", type: "pessoal" },
-  { id: "w15", day: 6, start: "10:00", end: "12:00", title: "Descanso consciente", category: "descanso", type: "pessoal" },
+  {
+    id: "w1",
+    day: 0,
+    start: "09:00",
+    end: "12:00",
+    title: "Spring — desenvolvimento",
+    category: "spring",
+    type: "fixo",
+  },
+  {
+    id: "w2",
+    day: 0,
+    start: "14:00",
+    end: "15:00",
+    title: "Mentoria individual",
+    category: "mentorias",
+    type: "fixo",
+  },
+  {
+    id: "w3",
+    day: 0,
+    start: "19:30",
+    end: "21:30",
+    title: "Faculdade",
+    category: "faculdade",
+    type: "fixo",
+  },
+  {
+    id: "w4",
+    day: 1,
+    start: "07:00",
+    end: "08:00",
+    title: "Exercício",
+    category: "exercicio",
+    type: "pessoal",
+  },
+  {
+    id: "w5",
+    day: 1,
+    start: "09:00",
+    end: "11:00",
+    title: "Foco — RUMO",
+    category: "rumo",
+    type: "foco",
+  },
+  {
+    id: "w6",
+    day: 1,
+    start: "19:30",
+    end: "21:30",
+    title: "Faculdade",
+    category: "faculdade",
+    type: "fixo",
+  },
+  {
+    id: "w7",
+    day: 2,
+    start: "09:00",
+    end: "12:00",
+    title: "Spring — desenvolvimento",
+    category: "spring",
+    type: "fixo",
+  },
+  {
+    id: "w8",
+    day: 2,
+    start: "13:00",
+    end: "14:30",
+    title: "Foco — Rocketseat",
+    category: "rocketseat",
+    type: "foco",
+  },
+  {
+    id: "w9",
+    day: 3,
+    start: "09:00",
+    end: "11:00",
+    title: "Foco — Smart Schedule",
+    category: "smart-schedule",
+    type: "foco",
+  },
+  {
+    id: "w10",
+    day: 3,
+    start: "18:00",
+    end: "19:00",
+    title: "Deslocamento",
+    category: "deslocamento",
+    type: "fixo",
+  },
+  {
+    id: "w11",
+    day: 4,
+    start: "09:00",
+    end: "12:00",
+    title: "Spring — desenvolvimento",
+    category: "spring",
+    type: "fixo",
+  },
+  {
+    id: "w12",
+    day: 4,
+    start: "16:00",
+    end: "17:30",
+    title: "Mentorias em grupo",
+    category: "mentorias",
+    type: "fixo",
+  },
+  {
+    id: "w13",
+    day: 5,
+    start: "10:00",
+    end: "12:00",
+    title: "Tarefas domésticas",
+    category: "domesticas",
+    type: "pessoal",
+  },
+  {
+    id: "w14",
+    day: 5,
+    start: "15:00",
+    end: "18:00",
+    title: "Família",
+    category: "familia",
+    type: "pessoal",
+  },
+  {
+    id: "w15",
+    day: 6,
+    start: "10:00",
+    end: "12:00",
+    title: "Descanso consciente",
+    category: "descanso",
+    type: "pessoal",
+  },
 ];
 
 export type CapacityRow = { day: string; committedH: number; capacityH: number };
@@ -175,11 +394,23 @@ export const weekCapacity: CapacityRow[] = [
   { day: "Dom", committedH: 2, capacityH: 5 },
 ];
 
-export type PlanAlert = { id: string; level: "conflito" | "sobrecarga" | "atencao"; message: string };
+export type PlanAlert = {
+  id: string;
+  level: "conflito" | "sobrecarga" | "atencao";
+  message: string;
+};
 
 export const planAlerts: PlanAlert[] = [
-  { id: "al1", level: "conflito", message: "Quarta: mentoria às 14h sobrepõe o bloco de foco do RUMO." },
-  { id: "al2", level: "sobrecarga", message: "Quarta ultrapassa a capacidade estimada em 30 minutos." },
+  {
+    id: "al1",
+    level: "conflito",
+    message: "Quarta: mentoria às 14h sobrepõe o bloco de foco do RUMO.",
+  },
+  {
+    id: "al2",
+    level: "sobrecarga",
+    message: "Quarta ultrapassa a capacidade estimada em 30 minutos.",
+  },
   { id: "al3", level: "atencao", message: "Quinta tem 3 deslocamentos sem intervalo entre eles." },
 ];
 
@@ -193,11 +424,46 @@ export type FocusSession = {
 };
 
 export const focusSessions: FocusSession[] = [
-  { id: "f1", date: "01/09", task: "Arquitetura do RUMO", category: "rumo", plannedMin: 25, realMin: 25 },
-  { id: "f2", date: "01/09", task: "Revisão de PRs", category: "spring", plannedMin: 25, realMin: 18 },
-  { id: "f3", date: "31/08", task: "Trilha de testes", category: "rocketseat", plannedMin: 50, realMin: 50 },
-  { id: "f4", date: "31/08", task: "Roteiro de mentoria", category: "mentorias", plannedMin: 25, realMin: 22 },
-  { id: "f5", date: "30/08", task: "Trabalho da faculdade", category: "faculdade", plannedMin: 50, realMin: 35 },
+  {
+    id: "f1",
+    date: "01/09",
+    task: "Arquitetura do RUMO",
+    category: "rumo",
+    plannedMin: 25,
+    realMin: 25,
+  },
+  {
+    id: "f2",
+    date: "01/09",
+    task: "Revisão de PRs",
+    category: "spring",
+    plannedMin: 25,
+    realMin: 18,
+  },
+  {
+    id: "f3",
+    date: "31/08",
+    task: "Trilha de testes",
+    category: "rocketseat",
+    plannedMin: 50,
+    realMin: 50,
+  },
+  {
+    id: "f4",
+    date: "31/08",
+    task: "Roteiro de mentoria",
+    category: "mentorias",
+    plannedMin: 25,
+    realMin: 22,
+  },
+  {
+    id: "f5",
+    date: "30/08",
+    task: "Trabalho da faculdade",
+    category: "faculdade",
+    plannedMin: 50,
+    realMin: 35,
+  },
 ];
 
 export const reviewData = {
@@ -213,18 +479,12 @@ export const reviewData = {
     "2 sessões de estudo concluídas",
     "2 treinos realizados",
   ],
-  postponed: [
-    "Ajustar exportação de agenda (Smart Schedule)",
-    "Compras da semana",
-  ],
+  postponed: ["Ajustar exportação de agenda (Smart Schedule)", "Compras da semana"],
   unexpected: [
     "Incidente em produção na quarta-feira (2h)",
     "Atraso de trem na quinta-feira (40 min)",
   ],
-  wins: [
-    "Fundação do RUMO definida sem virar noite",
-    "Sono acima de 6h30 em 5 das 7 noites",
-  ],
+  wins: ["Fundação do RUMO definida sem virar noite", "Sono acima de 6h30 em 5 das 7 noites"],
   struggles: [
     "Blocos de foco à tarde interrompidos com frequência",
     "Refeições em konbini acima do desejado",

@@ -45,7 +45,10 @@ export const Route = createFileRoute("/_app/today")({
 
 function TodayPage() {
   const { dateLabel } = Route.useLoaderData();
-  const { data: appointments = [] } = useDemoQuery(["today", "appointments"], () => todayAppointments);
+  const { data: appointments = [] } = useDemoQuery(
+    ["today", "appointments"],
+    () => todayAppointments,
+  );
   const { data: priorities = [] } = useDemoQuery(["today", "priorities"], () => todayPriorities);
   const [energy, setEnergy] = useState(energyCheckin.level);
 
@@ -119,7 +122,11 @@ function TodayPage() {
                       <Circle className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                     )}
                     <div className="min-w-0">
-                      <p className={p.done ? "truncate text-sm line-through opacity-70" : "truncate text-sm"}>
+                      <p
+                        className={
+                          p.done ? "truncate text-sm line-through opacity-70" : "truncate text-sm"
+                        }
+                      >
                         {p.title}
                       </p>
                       <p className="mt-0.5 truncate text-xs text-muted-foreground">
@@ -138,7 +145,10 @@ function TodayPage() {
           <SectionCard title="Próximos compromissos" description="Blocos fixos que já estão de pé.">
             <ul className="divide-y divide-border">
               {appointments.map((a) => (
-                <li key={a.id} className="grid grid-cols-[auto_minmax(0,1fr)] gap-4 py-3 first:pt-0 last:pb-0">
+                <li
+                  key={a.id}
+                  className="grid grid-cols-[auto_minmax(0,1fr)] gap-4 py-3 first:pt-0 last:pb-0"
+                >
                   <span className="shrink-0 font-display text-sm tabular-nums text-muted-foreground">
                     {a.start}
                     <span className="block text-xs">{a.end}</span>

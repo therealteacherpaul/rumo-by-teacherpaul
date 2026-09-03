@@ -13,7 +13,6 @@ import appCss from "../styles.css?url";
 import { Toaster } from "../components/ui/sonner";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
-
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -82,8 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "RUMO by Teacher Paul — Seu sistema operacional pessoal" },
       {
         name: "description",
-        content:
-          "RUMO transforma prioridades em execução realista. Powered by Método BÚSSOLA™.",
+        content: "RUMO transforma prioridades em execução realista. Powered by Método BÚSSOLA™.",
       },
       { name: "author", content: "Teacher Paul" },
       { property: "og:title", content: "RUMO by Teacher Paul" },
@@ -140,4 +138,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

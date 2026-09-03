@@ -100,7 +100,11 @@ function DashboardPage() {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.tasksPlannedVsDone}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--color-border)"
+                  vertical={false}
+                />
                 <XAxis dataKey="week" tick={axis} axisLine={false} tickLine={false} />
                 <YAxis tick={axis} axisLine={false} tickLine={false} width={28} />
                 <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--color-muted)" }} />
@@ -115,7 +119,11 @@ function DashboardPage() {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.hoursByCategory} layout="vertical" margin={{ left: 12 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--color-border)"
+                  horizontal={false}
+                />
                 <XAxis type="number" tick={axis} axisLine={false} tickLine={false} />
                 <YAxis
                   type="category"
@@ -136,9 +144,19 @@ function DashboardPage() {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.focusSessionsWeek}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--color-border)"
+                  vertical={false}
+                />
                 <XAxis dataKey="day" tick={axis} axisLine={false} tickLine={false} />
-                <YAxis tick={axis} axisLine={false} tickLine={false} width={28} allowDecimals={false} />
+                <YAxis
+                  tick={axis}
+                  axisLine={false}
+                  tickLine={false}
+                  width={28}
+                  allowDecimals={false}
+                />
                 <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--color-muted)" }} />
                 <Bar dataKey="sessoes" fill="var(--color-chart-1)" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -150,7 +168,11 @@ function DashboardPage() {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.sleep}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--color-border)"
+                  vertical={false}
+                />
                 <XAxis dataKey="day" tick={axis} axisLine={false} tickLine={false} />
                 <YAxis tick={axis} axisLine={false} tickLine={false} width={28} domain={[4, 9]} />
                 <Tooltip contentStyle={tooltipStyle} />

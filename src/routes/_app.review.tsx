@@ -55,7 +55,10 @@ function ListBlock({
     >
       <ul className="space-y-2.5">
         {items.map((item) => (
-          <li key={item} className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 text-sm">
+          <li
+            key={item}
+            className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 text-sm"
+          >
             <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-gold" aria-hidden />
             <span>{item}</span>
           </li>

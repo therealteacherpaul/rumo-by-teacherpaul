@@ -20,9 +20,7 @@ export function EmptyState({ icon, title, description, action, className }: Prop
     >
       {icon && <span className="mb-3 text-gold">{icon}</span>}
       <p className="font-medium">{title}</p>
-      {description && (
-        <p className="mt-1 max-w-sm text-sm text-muted-foreground">{description}</p>
-      )}
+      {description && <p className="mt-1 max-w-sm text-sm text-muted-foreground">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );

@@ -69,8 +69,8 @@ function Landing() {
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-navy-foreground/75">
               O RUMO ajuda profissionais com rotinas fragmentadas a transformar prioridades em
-              execução realista — considerando compromissos fixos, deslocamentos, estudos,
-              trabalho, descanso e o que a vida não avisa que vai acontecer.
+              execução realista — considerando compromissos fixos, deslocamentos, estudos, trabalho,
+              descanso e o que a vida não avisa que vai acontecer.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-gold text-gold-foreground hover:bg-gold/90">
@@ -131,8 +131,8 @@ function Landing() {
         <section className="mt-16 rounded-2xl border border-navy-foreground/12 bg-navy-soft/30 p-8">
           <h2 className="text-xl font-semibold">Independente por padrão</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-navy-foreground/70">
-            O RUMO funciona integralmente sozinho. No futuro, será possível conectar opcionalmente
-            a conta do Smart Schedule Pro para importar eventos, contatos e locais favoritos — mas
+            O RUMO funciona integralmente sozinho. No futuro, será possível conectar opcionalmente a
+            conta do Smart Schedule Pro para importar eventos, contatos e locais favoritos — mas
             nenhuma funcionalidade essencial dependerá disso.
           </p>
         </section>

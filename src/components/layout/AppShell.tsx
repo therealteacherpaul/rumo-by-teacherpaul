@@ -22,7 +22,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         >
           <div className="flex h-16 items-center px-4">
-            <Link to="/today" className="min-w-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
+            <Link
+              to="/today"
+              className="min-w-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+            >
               <RumoLogo compact={collapsed} className="text-sidebar-foreground" />
             </Link>
           </div>
@@ -37,7 +40,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                     className:
                       "bg-sidebar-accent text-sidebar-accent-foreground border-l-2 border-sidebar-primary",
                   }}
-                  inactiveProps={{ className: "text-sidebar-foreground/75 border-l-2 border-transparent" }}
+                  inactiveProps={{
+                    className: "text-sidebar-foreground/75 border-l-2 border-transparent",
+                  }}
                   className={cn(
                     "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     collapsed && "justify-center px-0",
@@ -109,7 +114,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                   {({ isActive }) => (
                     <>
                       <Icon className={cn("size-5", isActive && "text-gold")} aria-hidden />
-                      <span className="truncate">{label === "Revisão semanal" ? "Revisão" : label}</span>
+                      <span className="truncate">
+                        {label === "Revisão semanal" ? "Revisão" : label}
+                      </span>
                     </>
                   )}
                 </Link>
