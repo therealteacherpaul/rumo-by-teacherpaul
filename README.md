@@ -1,404 +1,142 @@
-# Rumo: By Teacher Paul
+# RUMO by Teacher Paul
 
-use a identidade visual presente no pdf anexado.
+O RUMO é um sistema operacional pessoal para transformar prioridades em uma execução realista, considerando compromissos, tarefas, foco, descanso e imprevistos.
 
-Quero iniciar um novo aplicativo SaaS chamado:
+O produto é independente do Smart Schedule Pro. Uma integração com o Smart Schedule poderá existir no futuro, de forma opcional, para importar informações de agenda. Ela não é necessária para usar o RUMO.
 
-RUMO by Teacher Paul
+## Estado atual
 
-Slogan:
+Este repositório contém uma demonstração frontend navegável. Atualmente:
 
-“Seu sistema operacional pessoal.”
+- as telas usam dados locais de exemplo;
+- não há autenticação;
+- não há banco de dados conectado;
+- não há integrações externas;
+- não há sincronização com Smart Schedule Pro;
+- ações de produto que dependem de backend ainda não estão implementadas.
 
-Endosso:
+Todas as informações exibidas na demonstração são fictícias e servem apenas para ilustrar a experiência do RUMO. Não inclua credenciais, segredos ou dados pessoais neste repositório.
 
-“Powered by Método BÚSSOLA™”
+## Telas
 
-IMPORTANTE SOBRE O PRODUTO
+- **Hoje** (`/today`): prioridades, compromissos, bloco de foco, check-in de energia e comparação entre planejado e realizado.
+- **Planejamento** (`/plan`): visão semanal, compromissos fixos, blocos de foco, capacidade e alertas.
+- **Tarefas** (`/tasks`): tarefas e projetos com categoria, prioridade, prazo, estimativa e status.
+- **Foco** (`/focus`): tarefa selecionada, temporizador visual e histórico de sessões.
+- **Revisão** (`/review`): planejado, realizado, adiamentos, imprevistos, vitórias, dificuldades, aprendizados e ajustes.
+- **Dashboard** (`/dashboard`): indicadores separados de tarefas, horas, foco, sono, treino, estudo, trabalho estratégico, deslocamento e refeições.
+- **Configurações** (`/settings`): perfil, preferências, categorias, notificações, privacidade e integrações opcionais.
 
-RUMO é um produto novo e independente do Smart Schedule Pro.
+A navegação também inclui a landing page em `/`. No desktop, o aplicativo usa sidebar; em telas pequenas, usa navegação inferior.
 
-O RUMO deve funcionar integralmente sozinho. No futuro, o usuário poderá conectar opcionalmente sua conta do Smart Schedule Pro para importar eventos, contatos e locais favoritos, mas essa integração não pode ser necessária para usar nenhuma funcionalidade essencial.
+## Stack
 
-OBJETIVO DO PRODUTO
-
-O RUMO ajuda profissionais com rotinas fragmentadas a transformar prioridades em execução realista, considerando:
-
-- compromissos fixos;
-
-- tarefas e projetos;
-
-- deslocamentos;
-
-- foco e produtividade;
-
-- estudos;
-
-- trabalho;
-
-- geração de renda;
-
-- sono;
-
-- alimentação;
-
-- exercício;
-
-- família;
-
-- tarefas domésticas;
-
-- imprevistos;
-
-- planejamento versus execução real.
-
-O produto não deve incentivar produtividade tóxica nem tentar preencher todos os minutos do dia. A proposta é devolver clareza, direção e tempo.
-
-OBJETIVO DESTA PRIMEIRA IMPLEMENTAÇÃO
-
-Nesta etapa, construa somente a fundação visual e estrutural do frontend.
-
-Não implemente ainda:
-
-- banco de dados;
-
-- autenticação real;
-
-- Supabase;
-
-- Gemini;
-
-- pagamentos;
-
-- Smart Schedule Pro;
-
-- APIs externas;
-
-- automações;
-
-- dados complexos;
-
-- funcionalidades simuladas que pareçam estar realmente funcionando.
-
-Crie uma interface navegável usando dados locais de demonstração claramente identificados como “Dados de exemplo”.
-
-STACK DO FRONTEND
-
-Use:
-
-- React;
-
+- React 19 e React DOM;
 - TypeScript;
-
-- Vite;
-
-- Tailwind CSS;
-
-- shadcn/ui;
-
-- React Router;
-
-- TanStack Query;
-
-- React Hook Form;
-
-- Zod.
-
-O código deve possuir componentes reutilizáveis, boa separação de responsabilidades e estrutura preparada para futura conexão com Supabase.
-
-IDENTIDADE VISUAL
-
-A marca deve transmitir:
-
-- clareza;
-
-- direção;
-
-- confiança;
-
-- sofisticação discreta;
-
-- humanidade;
-
-- produtividade sustentável.
-
-Utilize como base:
-
-- azul-marinho profundo;
-
-- dourado discreto;
-
-- branco;
-
-- cinzas claros;
-
-- tipografia elegante e altamente legível.
-
-Evite:
-
-- visual infantil;
-
-- excesso de gradientes;
-
-- neon;
-
-- gamificação exagerada;
-
-- dashboards visualmente poluídos;
-
-- aparência genérica de template de startup;
-
-- linguagem de guru ou “hustle culture”.
-
-ESTRUTURA DO APLICATIVO
-
-Crie as seguintes rotas:
-
-1. `/`
-
-Landing/login de apresentação do RUMO.
-
-2. `/today`
-
-Página “Hoje”.
-
-Mostrar:
-
-- saudação;
-
-- data;
-
-- próximos compromissos;
-
-- três prioridades do dia;
-
-- bloco de foco;
-
-- breve check-in de energia;
-
-- indicador planejado versus realizado.
-
-3. `/plan`
-
-Página “Planejamento”.
-
-Mostrar:
-
-- visão semanal;
-
-- compromissos fixos;
-
-- blocos de foco;
-
-- capacidade estimada;
-
-- alertas de conflito ou sobrecarga.
-
-4. `/tasks`
-
-Página “Tarefas”.
-
-Mostrar:
-
-- tarefas;
-
-- projetos;
-
-- categorias;
-
-- prioridade;
-
-- prazo;
-
-- duração estimada;
-
-- status.
-
-5. `/focus`
-
-Página “Foco”.
-
-Mostrar:
-
-- temporizador estilo Pomodoro;
-
-- tarefa selecionada;
-
-- duração planejada;
-
-- histórico de sessões.
-
-O temporizador pode ser apenas visual nesta etapa.
-
-6. `/review`
-
-Página “Revisão semanal”.
-
-Mostrar:
-
-- o que foi planejado;
-
-- o que foi realizado;
-
-- tarefas adiadas;
-
-- imprevistos;
-
-- vitórias;
-
-- dificuldades;
-
-- aprendizados;
-
-- ajustes para a próxima semana.
-
-7. `/dashboard`
-
-Página “Dashboard”.
-
-Mostrar dados de exemplo para:
-
-- tarefas planejadas versus concluídas;
-
-- horas por categoria;
-
-- sessões de foco;
-
-- sono planejado versus realizado;
-
-- treino;
-
-- estudo;
-
-- trabalho estratégico;
-
-- deslocamento;
-
-- refeições em casa versus konbini.
-
-Não criar um único “índice de produtividade”. Os indicadores devem ser compreensíveis individualmente.
-
-8. `/settings`
-
-Página “Configurações”.
-
-Criar seções para:
-
-- perfil;
-
-- preferências;
-
-- categorias;
-
-- notificações;
-
-- privacidade;
-
-- integrações.
-
-Dentro de integrações, mostrar:
-
-“Smart Schedule Pro — não conectado”
-
-Incluir botão desabilitado ou claramente marcado:
-
-“Conectar futuramente”
-
-Adicionar o texto:
-
-“O RUMO funciona normalmente sem o Smart Schedule Pro. A integração é opcional.”
-
-NAVEGAÇÃO
-
-No desktop:
-
-- sidebar lateral;
-
-- logo RUMO;
-
-- navegação com ícones;
-
-- área principal limpa;
-
-- opção de recolher a sidebar.
-
-No celular:
-
-- navegação inferior ou menu adequado para telas pequenas;
-
-- preservar acesso rápido a Hoje, Planejamento, Tarefas e Revisão.
-
-DADOS DE EXEMPLO
-
-Use exemplos baseados em uma rotina profissional real, com categorias como:
-
-- Spring;
-
-- Deslocamento;
-
-- Faculdade;
-
-- Rocketseat;
-
-- RUMO;
-
-- Smart Schedule;
-
-- Mentorias;
-
-- Família;
-
-- Exercício;
-
-- Alimentação;
-
-- Tarefas domésticas;
-
-- Descanso.
-
-Marque claramente esses registros como demonstração, pois ainda não há banco de dados conectado.
-
-REQUISITOS DE QUALIDADE
-
-- Interface responsiva.
-
-- Componentes reutilizáveis.
-
-- Estados vazios bem desenhados.
-
-- Hierarquia visual clara.
-
-- Contraste acessível.
-
-- Textos em português brasileiro.
-
-- Não inventar funcionalidades de backend.
-
-- Não adicionar recursos fora deste escopo.
-
-- Não conectar serviços externos nesta etapa.
-
-- Preparar a estrutura para futura integração com Supabase.
-
-This project was built with [Lovable](https://lovable.dev).
-
-**Live app**: https://rumo-by-teacherpaul.lovable.app
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/697a87cd-6fa4-406f-831e-bcf5623302a8).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+- Vite 8 com TanStack Start;
+- TanStack Router para rotas e SSR;
+- TanStack Query para consumo das fixtures locais;
+- Tailwind CSS 4 e `tw-animate-css`;
+- componentes no estilo shadcn/ui, baseados em Radix UI;
+- React Hook Form e Zod para o formulário de demonstração;
+- Recharts para os gráficos do Dashboard;
+- Lucide React para ícones;
+- `date-fns` para utilitários de data;
+- Nitro com preset Cloudflare para o build de produção.
+
+## Requisitos
+
+É necessário ter Node.js e npm instalados. O projeto não depende de Bun.
+
+## Instalação e desenvolvimento
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+npm install
 npm run dev
 ```
+
+O servidor de desenvolvimento informa no terminal o endereço local disponível, normalmente em `http://127.0.0.1:8080`.
+
+## Scripts
+
+| Script | Função |
+| --- | --- |
+| `npm run dev` | inicia o servidor de desenvolvimento Vite; |
+| `npm run build` | gera o build de produção com Vite, TanStack Start e Nitro; |
+| `npm run build:dev` | gera um build usando o modo de desenvolvimento; |
+| `npm run preview` | serve o conteúdo de `.output` com Wrangler; |
+| `npm run lint` | executa ESLint; |
+| `npm run typecheck` | executa o TypeScript em modo de verificação; |
+| `npm run format` | formata os arquivos com Prettier. |
+
+Para validar uma alteração:
+
+```sh
+npm run lint
+npm run typecheck
+npm run build
+npm run preview
+```
+
+O preview deve ser executado depois de `npm run build`, pois ele serve o artefato gerado em `.output`.
+
+## Arquitetura
+
+```text
+src/
+├── components/
+│   ├── brand/       identidade do RUMO
+│   ├── common/      cabeçalhos, cards e estados compartilhados
+│   ├── layout/      shell e navegação da aplicação
+│   └── ui/          componentes reutilizáveis baseados em Radix
+├── hooks/           hooks de responsividade e acesso às fixtures
+├── lib/             dados de demonstração, navegação, datas e utilitários
+├── routes/          landing, shell da aplicação e telas do produto
+├── router.tsx       configuração do router
+├── server.ts        entrada SSR com tratamento de erros
+└── styles.css       tokens visuais e estilos globais
+```
+
+As fixtures ficam centralizadas em `src/lib/demo-data.ts` e são consumidas localmente pelo hook `src/hooks/use-demo-query.ts`. Essa separação deixa a demonstração previsível sem simular uma integração real.
+
+## Decisões técnicas
+
+### SSR e hidratação
+
+O projeto usa TanStack Start com SSR. As fixtures síncronas são fornecidas como `initialData` do TanStack Query para que a renderização no servidor e a primeira renderização no cliente recebam o mesmo snapshot.
+
+### Timezone da demonstração
+
+As datas apresentadas na demonstração usam `Asia/Tokyo` como timezone de referência. Isso é uma decisão dos dados de exemplo, não uma conexão com calendário, localização ou serviço externo.
+
+### Dados locais
+
+O conteúdo demonstrativo é estático, local e explicitamente marcado como “Dados de exemplo”. IDs, relações e valores numéricos existem apenas para alimentar a interface, cálculos de capacidade e gráficos.
+
+### Preview com Wrangler
+
+O build gera `.output` com Nitro. O script `npm run preview` usa Wrangler para servir esse artefato localmente, permitindo verificar o resultado do build sem publicar ou fazer deploy.
+
+## Limitações atuais
+
+- não existe autenticação real;
+- não existe persistência ou banco de dados;
+- alterações feitas na interface não são sincronizadas com um servidor;
+- Smart Schedule Pro não está conectado;
+- não há APIs externas, automações ou notificações reais;
+- o temporizador de foco é apenas visual nesta etapa;
+- as métricas do Dashboard são exemplos, não análises de uma conta real;
+- a demonstração não representa dados reais de uma pessoa, empresa ou família.
+
+## Roadmap futuro
+
+Os próximos passos possíveis, fora do escopo atual, incluem:
+
+1. definir o modelo de dados e persistência;
+2. adicionar autenticação e autorização;
+3. permitir edição persistente de tarefas, agenda e preferências;
+4. implementar uma integração opcional com Smart Schedule Pro;
+5. substituir as fixtures por consultas reais sem alterar a experiência essencial das telas;
+6. evoluir notificações, histórico e métricas com critérios de privacidade.
+
+Esses itens são direcionais e não estão implementados neste repositório.
