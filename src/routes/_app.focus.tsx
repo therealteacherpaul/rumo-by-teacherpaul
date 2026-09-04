@@ -38,13 +38,20 @@ export const Route = createFileRoute("/_app/focus")({
 });
 
 const durations = [25, 50, 90];
+type LocalFocusSession = (typeof focusSessions)[number] & {
+  status: "Concluída" | "Encerrada";
+};
 
 function FocusPage() {
   const { data: sessions = [] } = useDemoQuery(["focus", "sessions"], () => focusSessions);
+  const [localSessions, setLocalSessions] = useState<LocalFocusSession[]>(() =>
+    sessions.map((session) => ({ ...session, status: "Concluída" })),
+  );
   const [taskId, setTaskId] = useState(tasks[0]!.id);
   const [duration, setDuration] = useState(50);
   const [remainingSeconds, setRemainingSeconds] = useState(50 * 60);
   const [isRunning, setIsRunning] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const [focusMessage, setFocusMessage] = useState("");
 
   const selected = tasks.find((t) => t.id === taskId);
@@ -58,6 +65,19 @@ function FocusPage() {
       setRemainingSeconds((current) => {
         if (current <= 1) {
           setIsRunning(false);
+          setHasStarted(false);
+          setLocalSessions((currentSessions) => [
+            ...currentSessions,
+            {
+              id: `local-${currentSessions.length + 1}`,
+              date: "Agora",
+              task: selected?.title ?? "Tarefa selecionada",
+              category: selected?.category ?? "rumo",
+              plannedMin: duration,
+              realMin: duration,
+              status: "Concluída",
+            },
+          ]);
           setFocusMessage("Sessão encerrada nesta demonstração.");
           return 0;
         }
@@ -66,22 +86,37 @@ function FocusPage() {
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [isRunning]);
+  }, [duration, isRunning, selected?.category, selected?.title]);
 
   const startFocus = () => {
     if (remainingSeconds === 0) return;
     setIsRunning(true);
+    setHasStarted(true);
     setFocusMessage("Sessão de foco iniciada nesta demonstração.");
   };
 
   const resetFocus = () => {
     setIsRunning(false);
     setRemainingSeconds(duration * 60);
+    setHasStarted(true);
     setFocusMessage("Sessão reiniciada nesta demonstração.");
   };
 
   const endFocus = () => {
     setIsRunning(false);
+    setHasStarted(false);
+    setLocalSessions((currentSessions) => [
+      ...currentSessions,
+      {
+        id: `local-${currentSessions.length + 1}`,
+        date: "Agora",
+        task: selected?.title ?? "Tarefa selecionada",
+        category: selected?.category ?? "rumo",
+        plannedMin: duration,
+        realMin: Math.max(1, Math.floor((duration * 60 - remainingSeconds) / 60)),
+        status: "Encerrada",
+      },
+    ]);
     setFocusMessage("Sessão encerrada nesta demonstração. Nada foi salvo.");
   };
 
@@ -114,6 +149,7 @@ function FocusPage() {
               <Button
                 disabled={isRunning || remainingSeconds === 0}
                 className="bg-gold text-gold-foreground hover:bg-gold/90"
+                aria-label="Iniciar sessão de foco"
                 onClick={startFocus}
               >
                 <Play className="size-4" aria-hidden />
@@ -122,6 +158,7 @@ function FocusPage() {
               <Button
                 variant="outline"
                 disabled={!isRunning}
+                aria-label="Pausar sessão de foco"
                 onClick={() => {
                   setIsRunning(false);
                   setFocusMessage("Sessão pausada nesta demonstração.");
@@ -132,7 +169,8 @@ function FocusPage() {
               </Button>
               <Button
                 variant="ghost"
-                disabled={isRunning || remainingSeconds === duration * 60}
+                disabled={isRunning || !hasStarted}
+                aria-label="Reiniciar sessão de foco"
                 onClick={resetFocus}
               >
                 <RotateCcw className="size-4" aria-hidden />
@@ -152,7 +190,8 @@ function FocusPage() {
               variant="link"
               size="sm"
               className="mt-2"
-              disabled={!isRunning && remainingSeconds === 0}
+              disabled={!hasStarted}
+              aria-label="Encerrar sessão de foco"
               onClick={endFocus}
             >
               Encerrar sessão
@@ -203,8 +242,11 @@ function FocusPage() {
           </div>
         </SectionCard>
 
-        <SectionCard title="Histórico de sessões" description="Últimas sessões registradas.">
-          {sessions.length === 0 ? (
+        <SectionCard
+          title="Histórico de sessões"
+          description="Últimas sessões registradas nesta demonstração."
+        >
+          {localSessions.length === 0 ? (
             <EmptyState
               icon={<Timer className="size-5" />}
               title="Ainda sem sessões"
@@ -212,7 +254,7 @@ function FocusPage() {
             />
           ) : (
             <ul className="divide-y divide-border">
-              {sessions.map((s) => (
+              {localSessions.map((s) => (
                 <li
                   key={s.id}
                   className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-3 first:pt-0 last:pb-0"
@@ -223,10 +265,13 @@ function FocusPage() {
                       {s.date} · {categoryName(s.category)}
                     </p>
                   </div>
-                  <p className="shrink-0 text-sm tabular-nums">
-                    {s.realMin}
-                    <span className="text-muted-foreground"> / {s.plannedMin} min</span>
-                  </p>
+                  <div className="shrink-0 text-right">
+                    <p className="text-xs font-medium text-success">{s.status}</p>
+                    <p className="text-sm tabular-nums">
+                      {s.realMin}
+                      <span className="text-muted-foreground"> / {s.plannedMin} min</span>
+                    </p>
+                  </div>
                 </li>
               ))}
             </ul>
