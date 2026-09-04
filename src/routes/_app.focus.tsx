@@ -49,12 +49,30 @@ function FocusPage() {
   );
   const [taskId, setTaskId] = useState(tasks[0]!.id);
   const [duration, setDuration] = useState(50);
+  const [isCustomDuration, setIsCustomDuration] = useState(false);
+  const [customMinutes, setCustomMinutes] = useState("50");
   const [remainingSeconds, setRemainingSeconds] = useState(50 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [focusMessage, setFocusMessage] = useState("");
 
   const selected = tasks.find((t) => t.id === taskId);
+  const customDurationValue = Number(customMinutes);
+  const isCustomDurationValid =
+    customMinutes.trim() !== "" &&
+    Number.isInteger(customDurationValue) &&
+    customDurationValue >= 5 &&
+    customDurationValue <= 240;
+  const customDurationMessage =
+    customMinutes.trim() === ""
+      ? "Informe a duração em minutos."
+      : !Number.isInteger(customDurationValue)
+        ? "Use um número inteiro de minutos."
+        : customDurationValue < 5 || customDurationValue > 240
+          ? "Informe um valor entre 5 e 240 minutos."
+          : customDurationValue % 5 !== 0
+            ? "Você pode usar qualquer valor válido; múltiplos de 5 são recomendados."
+            : "";
   const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, "0");
   const seconds = String(remainingSeconds % 60).padStart(2, "0");
 
@@ -89,7 +107,7 @@ function FocusPage() {
   }, [duration, isRunning, selected?.category, selected?.title]);
 
   const startFocus = () => {
-    if (remainingSeconds === 0) return;
+    if (remainingSeconds === 0 || (isCustomDuration && !isCustomDurationValid)) return;
     setIsRunning(true);
     setHasStarted(true);
     setFocusMessage("Sessão de foco iniciada nesta demonstração.");
@@ -147,7 +165,11 @@ function FocusPage() {
             />
             <div className="mt-6 flex flex-wrap justify-center gap-2">
               <Button
-                disabled={isRunning || remainingSeconds === 0}
+                disabled={
+                  isRunning ||
+                  remainingSeconds === 0 ||
+                  (isCustomDuration && !isCustomDurationValid)
+                }
                 className="bg-gold text-gold-foreground hover:bg-gold/90"
                 aria-label="Iniciar sessão de foco"
                 onClick={startFocus}
@@ -220,7 +242,7 @@ function FocusPage() {
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Duração planejada
               </p>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:flex">
                 {durations.map((d) => (
                   <Button
                     key={d}
@@ -228,16 +250,69 @@ function FocusPage() {
                     size="sm"
                     disabled={isRunning}
                     onClick={() => {
+                      setIsCustomDuration(false);
                       setDuration(d);
                       if (!isRunning) setRemainingSeconds(d * 60);
                       setFocusMessage("Duração atualizada nesta demonstração.");
                     }}
-                    className="flex-1"
+                    className="min-w-0 flex-1"
                   >
                     {d} min
                   </Button>
                 ))}
+                <Button
+                  variant={isCustomDuration ? "default" : "outline"}
+                  size="sm"
+                  disabled={isRunning}
+                  aria-label="Selecionar duração personalizada"
+                  onClick={() => {
+                    setIsCustomDuration(true);
+                    setCustomMinutes(String(duration));
+                    if (isCustomDurationValid) setRemainingSeconds(duration * 60);
+                    setFocusMessage("Duração personalizada selecionada nesta demonstração.");
+                  }}
+                  className="min-w-0 flex-1"
+                >
+                  Personalizado
+                </Button>
               </div>
+              {isCustomDuration ? (
+                <div className="mt-3">
+                  <label htmlFor="custom-focus-duration" className="text-xs text-muted-foreground">
+                    Minutos (5 a 240)
+                  </label>
+                  <input
+                    id="custom-focus-duration"
+                    type="number"
+                    min={5}
+                    max={240}
+                    step={1}
+                    inputMode="numeric"
+                    value={customMinutes}
+                    disabled={isRunning}
+                    aria-label="Duração personalizada em minutos"
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setCustomMinutes(value);
+                      if (
+                        Number.isInteger(Number(value)) &&
+                        Number(value) >= 5 &&
+                        Number(value) <= 240
+                      ) {
+                        setDuration(Number(value));
+                        setRemainingSeconds(Number(value) * 60);
+                      }
+                      setFocusMessage("");
+                    }}
+                    className="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  />
+                  {customDurationMessage ? (
+                    <p className="mt-1 text-xs text-muted-foreground" role="status">
+                      {customDurationMessage}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </div>
         </SectionCard>
