@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ListFilter, Search } from "lucide-react";
+import { Check, ListFilter, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
@@ -61,23 +61,40 @@ const statusStyle: Record<string, string> = {
 
 function TasksPage() {
   const { data: tasks = [] } = useDemoQuery(["tasks"], () => demoTasks);
+  const [localTasks, setLocalTasks] = useState(() => tasks.map((task) => ({ ...task })));
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("todas");
   const [status, setStatus] = useState("todos");
+  const [taskMessage, setTaskMessage] = useState("");
 
   const filtered = useMemo(
     () =>
-      tasks.filter(
+      localTasks.filter(
         (t) =>
           (category === "todas" || t.category === category) &&
           (status === "todos" || t.status === status) &&
           (t.title.toLowerCase().includes(query.toLowerCase()) ||
             t.project.toLowerCase().includes(query.toLowerCase())),
       ),
-    [tasks, query, category, status],
+    [localTasks, query, category, status],
   );
 
-  const projects = Array.from(new Set(tasks.map((t) => t.project)));
+  const projects = Array.from(new Set(localTasks.map((t) => t.project)));
+
+  const toggleTask = (taskId: string) => {
+    const task = localTasks.find((item) => item.id === taskId);
+    if (!task) return;
+
+    const completed = task.status === "Concluída";
+    setLocalTasks((current) =>
+      current.map((item) =>
+        item.id === taskId ? { ...item, status: completed ? "A fazer" : "Concluída" } : item,
+      ),
+    );
+    setTaskMessage(
+      completed ? "Tarefa reaberta nesta demonstração." : "Tarefa concluída nesta demonstração.",
+    );
+  };
 
   return (
     <div className="space-y-8">
@@ -160,6 +177,15 @@ function TasksPage() {
                   {filtered.map((t) => (
                     <TableRow key={t.id}>
                       <TableCell className="max-w-xs">
+                        <button
+                          type="button"
+                          className="mr-2 inline-flex size-5 items-center justify-center rounded-sm border border-input align-middle outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          aria-label={`${t.status === "Concluída" ? "Reabrir" : "Concluir"} tarefa: ${t.title}`}
+                          aria-pressed={t.status === "Concluída"}
+                          onClick={() => toggleTask(t.id)}
+                        >
+                          {t.status === "Concluída" && <Check className="size-3" aria-hidden />}
+                        </button>
                         <p className="break-words font-medium">{t.title}</p>
                         <p className="break-words text-xs text-muted-foreground">{t.project}</p>
                       </TableCell>
@@ -197,7 +223,16 @@ function TasksPage() {
             <ul className="space-y-3 md:hidden">
               {filtered.map((t) => (
                 <li key={t.id} className="rounded-lg border border-border/70 p-3">
-                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                  <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
+                    <button
+                      type="button"
+                      className="mt-0.5 inline-flex size-5 items-center justify-center rounded-sm border border-input outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-label={`${t.status === "Concluída" ? "Reabrir" : "Concluir"} tarefa: ${t.title}`}
+                      aria-pressed={t.status === "Concluída"}
+                      onClick={() => toggleTask(t.id)}
+                    >
+                      {t.status === "Concluída" && <Check className="size-3" aria-hidden />}
+                    </button>
                     <div className="min-w-0">
                       <p className="break-words text-sm font-medium">{t.title}</p>
                       <p className="break-words text-xs text-muted-foreground">{t.project}</p>
@@ -226,12 +261,17 @@ function TasksPage() {
             </ul>
           </>
         )}
+        {taskMessage && (
+          <p className="mt-3 text-xs text-success" role="status">
+            {taskMessage}
+          </p>
+        )}
       </SectionCard>
 
       <SectionCard title="Projetos" description="Agrupamento das tarefas de exemplo.">
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((p) => {
-            const items = tasks.filter((t) => t.project === p);
+            const items = localTasks.filter((t) => t.project === p);
             const doneCount = items.filter((t) => t.status === "Concluída").length;
             return (
               <li key={p} className="rounded-lg border border-border/70 p-4">

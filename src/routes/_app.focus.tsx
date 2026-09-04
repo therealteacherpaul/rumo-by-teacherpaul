@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Pause, Play, RotateCcw, Timer } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -43,9 +43,47 @@ function FocusPage() {
   const { data: sessions = [] } = useDemoQuery(["focus", "sessions"], () => focusSessions);
   const [taskId, setTaskId] = useState(tasks[0]!.id);
   const [duration, setDuration] = useState(50);
+  const [remainingSeconds, setRemainingSeconds] = useState(50 * 60);
+  const [isRunning, setIsRunning] = useState(false);
+  const [focusMessage, setFocusMessage] = useState("");
 
   const selected = tasks.find((t) => t.id === taskId);
-  const minutes = String(duration).padStart(2, "0");
+  const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, "0");
+  const seconds = String(remainingSeconds % 60).padStart(2, "0");
+
+  useEffect(() => {
+    if (!isRunning) return;
+
+    const timer = window.setInterval(() => {
+      setRemainingSeconds((current) => {
+        if (current <= 1) {
+          setIsRunning(false);
+          setFocusMessage("Sessão encerrada nesta demonstração.");
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [isRunning]);
+
+  const startFocus = () => {
+    if (remainingSeconds === 0) return;
+    setIsRunning(true);
+    setFocusMessage("Sessão de foco iniciada nesta demonstração.");
+  };
+
+  const resetFocus = () => {
+    setIsRunning(false);
+    setRemainingSeconds(duration * 60);
+    setFocusMessage("Sessão reiniciada nesta demonstração.");
+  };
+
+  const endFocus = () => {
+    setIsRunning(false);
+    setFocusMessage("Sessão encerrada nesta demonstração. Nada foi salvo.");
+  };
 
   return (
     <div className="space-y-8">
@@ -61,29 +99,64 @@ function FocusPage() {
         <SectionCard title="Sessão atual" description="Escolha a tarefa e a duração planejada.">
           <div className="flex flex-col items-center rounded-xl border border-border/70 bg-secondary/60 px-6 py-10">
             <p className="font-display text-6xl font-semibold tabular-nums tracking-tight">
-              {minutes}:00
+              {minutes}:{seconds}
             </p>
             <p className="mt-3 max-w-xs break-words text-center text-sm text-muted-foreground">
               {selected ? selected.title : "Nenhuma tarefa selecionada"}
             </p>
-            <Progress value={0} className="mt-6 h-1.5 w-full max-w-xs" />
+            <Progress
+              value={
+                duration > 0 ? ((duration * 60 - remainingSeconds) / (duration * 60)) * 100 : 0
+              }
+              className="mt-6 h-1.5 w-full max-w-xs"
+            />
             <div className="mt-6 flex flex-wrap justify-center gap-2">
-              <Button disabled className="bg-gold text-gold-foreground hover:bg-gold/90">
+              <Button
+                disabled={isRunning || remainingSeconds === 0}
+                className="bg-gold text-gold-foreground hover:bg-gold/90"
+                onClick={startFocus}
+              >
                 <Play className="size-4" aria-hidden />
                 Iniciar
               </Button>
-              <Button variant="outline" disabled>
+              <Button
+                variant="outline"
+                disabled={!isRunning}
+                onClick={() => {
+                  setIsRunning(false);
+                  setFocusMessage("Sessão pausada nesta demonstração.");
+                }}
+              >
                 <Pause className="size-4" aria-hidden />
                 Pausar
               </Button>
-              <Button variant="ghost" disabled>
+              <Button
+                variant="ghost"
+                disabled={isRunning || remainingSeconds === duration * 60}
+                onClick={resetFocus}
+              >
                 <RotateCcw className="size-4" aria-hidden />
                 Reiniciar
               </Button>
             </div>
-            <p className="mt-4 text-xs text-muted-foreground">
-              Controles desabilitados nesta versão de demonstração.
-            </p>
+            {focusMessage ? (
+              <p className="mt-4 text-xs text-success" role="status">
+                {focusMessage}
+              </p>
+            ) : (
+              <p className="mt-4 text-xs text-muted-foreground">
+                O estado desta sessão existe somente nesta demonstração.
+              </p>
+            )}
+            <Button
+              variant="link"
+              size="sm"
+              className="mt-2"
+              disabled={!isRunning && remainingSeconds === 0}
+              onClick={endFocus}
+            >
+              Encerrar sessão
+            </Button>
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -91,7 +164,7 @@ function FocusPage() {
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Tarefa
               </p>
-              <Select value={taskId} onValueChange={setTaskId}>
+              <Select value={taskId} onValueChange={setTaskId} disabled={isRunning}>
                 <SelectTrigger aria-label="Selecionar tarefa">
                   <SelectValue />
                 </SelectTrigger>
@@ -114,7 +187,12 @@ function FocusPage() {
                     key={d}
                     variant={duration === d ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setDuration(d)}
+                    disabled={isRunning}
+                    onClick={() => {
+                      setDuration(d);
+                      if (!isRunning) setRemainingSeconds(d * 60);
+                      setFocusMessage("Duração atualizada nesta demonstração.");
+                    }}
                     className="flex-1"
                   >
                     {d} min

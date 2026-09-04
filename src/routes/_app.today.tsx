@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Battery, CalendarClock, CheckCircle2, Circle, Target, Timer } from "lucide-react";
 import { useState } from "react";
 
@@ -52,8 +53,13 @@ function TodayPage() {
   );
   const { data: priorities = [] } = useDemoQuery(["today", "priorities"], () => todayPriorities);
   const [energy, setEnergy] = useState(energyCheckin.level);
+  const [completedPriorityIds, setCompletedPriorityIds] = useState(
+    () => new Set(priorities.filter((priority) => priority.done).map((priority) => priority.id)),
+  );
+  const [priorityMessage, setPriorityMessage] = useState("");
+  const [energyMessage, setEnergyMessage] = useState("");
 
-  const done = priorities.filter((p) => p.done).length;
+  const done = completedPriorityIds.size;
   const ratio =
     plannedVsDoneToday.planejado > 0
       ? Math.round((plannedVsDoneToday.realizado / plannedVsDoneToday.planejado) * 100)
@@ -117,15 +123,36 @@ function TodayPage() {
                     key={p.id}
                     className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-border/70 px-3 py-3"
                   >
-                    {p.done ? (
-                      <CheckCircle2 className="size-4 shrink-0 text-success" aria-hidden />
-                    ) : (
-                      <Circle className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                    )}
+                    <button
+                      type="button"
+                      className="rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-label={`${completedPriorityIds.has(p.id) ? "Reabrir" : "Concluir"} prioridade: ${p.title}`}
+                      aria-pressed={completedPriorityIds.has(p.id)}
+                      onClick={() => {
+                        const isCompleted = completedPriorityIds.has(p.id);
+                        setCompletedPriorityIds((current) => {
+                          const next = new Set(current);
+                          if (isCompleted) next.delete(p.id);
+                          else next.add(p.id);
+                          return next;
+                        });
+                        setPriorityMessage(
+                          isCompleted
+                            ? "Prioridade reaberta nesta demonstração."
+                            : "Prioridade concluída nesta demonstração.",
+                        );
+                      }}
+                    >
+                      {completedPriorityIds.has(p.id) ? (
+                        <CheckCircle2 className="size-4 text-success" aria-hidden />
+                      ) : (
+                        <Circle className="size-4 text-muted-foreground" aria-hidden />
+                      )}
+                    </button>
                     <div className="min-w-0">
                       <p
                         className={
-                          p.done
+                          completedPriorityIds.has(p.id)
                             ? "break-words text-sm line-through opacity-70"
                             : "break-words text-sm"
                         }
@@ -137,11 +164,16 @@ function TodayPage() {
                       </p>
                     </div>
                     <Badge variant="secondary" className="shrink-0">
-                      {p.done ? "Feito" : "Aberto"}
+                      {completedPriorityIds.has(p.id) ? "Feito" : "Aberto"}
                     </Badge>
                   </li>
                 ))}
               </ul>
+            )}
+            {priorityMessage && (
+              <p className="mt-3 text-xs text-success" role="status">
+                {priorityMessage}
+              </p>
             )}
           </SectionCard>
 
@@ -180,8 +212,8 @@ function TodayPage() {
               </p>
               <p className="mt-1 text-xs text-muted-foreground">RUMO · 50 minutos planejados</p>
             </div>
-            <Button variant="outline" className="mt-4 w-full">
-              Abrir tela de foco
+            <Button asChild variant="outline" className="mt-4 w-full">
+              <Link to="/focus">Abrir tela de foco</Link>
             </Button>
           </SectionCard>
 
@@ -197,12 +229,20 @@ function TodayPage() {
                   variant={energy === i + 1 ? "default" : "outline"}
                   size="sm"
                   aria-label={label}
-                  onClick={() => setEnergy(i + 1)}
+                  onClick={() => {
+                    setEnergy(i + 1);
+                    setEnergyMessage("Check-in atualizado nesta demonstração.");
+                  }}
                 >
                   {i + 1}
                 </Button>
               ))}
             </div>
+            {energyMessage && (
+              <p className="mt-3 text-xs text-success" role="status">
+                {energyMessage}
+              </p>
+            )}
             <Separator className="my-4" />
             <p className="text-xs text-muted-foreground">
               Energia estável sugere manter os dois blocos de foco e evitar novas demandas hoje.
