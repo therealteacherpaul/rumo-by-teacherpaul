@@ -124,12 +124,14 @@ function TodayPage() {
                     <div className="min-w-0">
                       <p
                         className={
-                          p.done ? "truncate text-sm line-through opacity-70" : "truncate text-sm"
+                          p.done
+                            ? "break-words text-sm line-through opacity-70"
+                            : "break-words text-sm"
                         }
                       >
                         {p.title}
                       </p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      <p className="mt-0.5 break-words text-xs text-muted-foreground">
                         {categoryName(p.category)} · {p.estimateMin} min
                       </p>
                     </div>
@@ -154,8 +156,8 @@ function TodayPage() {
                     <span className="block text-xs">{a.end}</span>
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{a.title}</p>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    <p className="break-words text-sm font-medium">{a.title}</p>
+                    <p className="mt-0.5 break-words text-xs text-muted-foreground">
                       {categoryName(a.category)}
                       {a.place ? ` · ${a.place}` : ""}
                     </p>
@@ -185,7 +187,7 @@ function TodayPage() {
           <SectionCard title="Check-in de energia" description="Uma pergunta, sem julgamento.">
             <div className="flex items-center gap-2">
               <Battery className="size-4 shrink-0 text-gold" aria-hidden />
-              <p className="min-w-0 truncate text-sm">{energyCheckin.labels[energy - 1]}</p>
+              <p className="min-w-0 break-words text-sm">{energyCheckin.labels[energy - 1]}</p>
             </div>
             <div className="mt-4 grid grid-cols-5 gap-2">
               {energyCheckin.labels.map((label, i) => (

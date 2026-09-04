@@ -160,8 +160,8 @@ function TasksPage() {
                   {filtered.map((t) => (
                     <TableRow key={t.id}>
                       <TableCell className="max-w-xs">
-                        <p className="truncate font-medium">{t.title}</p>
-                        <p className="truncate text-xs text-muted-foreground">{t.project}</p>
+                        <p className="break-words font-medium">{t.title}</p>
+                        <p className="break-words text-xs text-muted-foreground">{t.project}</p>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {categoryName(t.category)}
@@ -199,8 +199,8 @@ function TasksPage() {
                 <li key={t.id} className="rounded-lg border border-border/70 p-3">
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{t.title}</p>
-                      <p className="truncate text-xs text-muted-foreground">{t.project}</p>
+                      <p className="break-words text-sm font-medium">{t.title}</p>
+                      <p className="break-words text-xs text-muted-foreground">{t.project}</p>
                     </div>
                     <Badge variant="outline" className={cn("shrink-0", priorityStyle[t.priority])}>
                       {t.priority}
@@ -235,7 +235,7 @@ function TasksPage() {
             const doneCount = items.filter((t) => t.status === "Concluída").length;
             return (
               <li key={p} className="rounded-lg border border-border/70 p-4">
-                <p className="truncate text-sm font-medium">{p}</p>
+                <p className="break-words text-sm font-medium">{p}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {doneCount} de {items.length} tarefas concluídas
                 </p>

@@ -235,7 +235,7 @@ function DashboardPage() {
                       }}
                       aria-hidden
                     />
-                    <span className="truncate">{m.name}</span>
+                    <span className="break-words">{m.name}</span>
                   </span>
                   <span className="shrink-0 tabular-nums">{m.value} refeições</span>
                 </li>

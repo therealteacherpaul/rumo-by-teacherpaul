@@ -114,7 +114,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   {({ isActive }) => (
                     <>
                       <Icon className={cn("size-5", isActive && "text-gold")} aria-hidden />
-                      <span className="truncate">
+                      <span className="whitespace-nowrap">
                         {label === "Revisão semanal" ? "Revisão" : label}
                       </span>
                     </>

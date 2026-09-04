@@ -250,7 +250,7 @@ function SettingsPage() {
                     style={{ background: c.color }}
                     aria-hidden
                   />
-                  <span className="min-w-0 truncate text-sm font-medium">{c.name}</span>
+                  <span className="min-w-0 break-words text-sm font-medium">{c.name}</span>
                   <Badge variant="secondary" className="shrink-0">
                     {c.kind}
                   </Badge>
@@ -311,7 +311,9 @@ function SettingsPage() {
                 <Plug className="size-4 text-muted-foreground" aria-hidden />
               </span>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">Smart Schedule Pro — não conectado</p>
+                <p className="break-words text-sm font-medium">
+                  Smart Schedule Pro — não conectado
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Importaria eventos, contatos e locais favoritos.
                 </p>

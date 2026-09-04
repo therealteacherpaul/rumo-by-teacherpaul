@@ -63,7 +63,7 @@ function FocusPage() {
             <p className="font-display text-6xl font-semibold tabular-nums tracking-tight">
               {minutes}:00
             </p>
-            <p className="mt-3 max-w-xs truncate text-center text-sm text-muted-foreground">
+            <p className="mt-3 max-w-xs break-words text-center text-sm text-muted-foreground">
               {selected ? selected.title : "Nenhuma tarefa selecionada"}
             </p>
             <Progress value={0} className="mt-6 h-1.5 w-full max-w-xs" />
@@ -140,8 +140,8 @@ function FocusPage() {
                   className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-3 first:pt-0 last:pb-0"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{s.task}</p>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    <p className="break-words text-sm font-medium">{s.task}</p>
+                    <p className="mt-0.5 break-words text-xs text-muted-foreground">
                       {s.date} · {categoryName(s.category)}
                     </p>
                   </div>

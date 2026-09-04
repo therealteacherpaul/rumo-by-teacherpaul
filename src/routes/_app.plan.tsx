@@ -100,8 +100,8 @@ function PlanPage() {
                     .filter((b) => b.day === index)
                     .map((b) => (
                       <div key={b.id} className={cn("rounded-md p-2.5", typeStyles[b.type])}>
-                        <p className="truncate text-xs font-medium">{b.title}</p>
-                        <p className="mt-1 truncate text-[11px] text-muted-foreground">
+                        <p className="break-words text-xs font-medium">{b.title}</p>
+                        <p className="mt-1 break-words text-[11px] text-muted-foreground">
                           {b.start}–{b.end} · {categoryName(b.category)}
                         </p>
                       </div>
