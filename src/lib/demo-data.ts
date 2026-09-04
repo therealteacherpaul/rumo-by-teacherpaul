@@ -30,12 +30,12 @@ export type Category = {
 };
 
 export const categories: Category[] = [
-  { id: "spring", name: "Spring", kind: "Trabalho", color: "var(--color-chart-1)" },
+  { id: "spring", name: "Trabalho principal", kind: "Trabalho", color: "var(--color-chart-1)" },
   { id: "deslocamento", name: "Deslocamento", kind: "Rotina", color: "var(--color-chart-5)" },
   { id: "faculdade", name: "Faculdade", kind: "Estudo", color: "var(--color-chart-3)" },
-  { id: "rocketseat", name: "Rocketseat", kind: "Estudo", color: "var(--color-chart-4)" },
+  { id: "rocketseat", name: "Curso profissional", kind: "Estudo", color: "var(--color-chart-4)" },
   { id: "rumo", name: "RUMO", kind: "Projeto", color: "var(--color-chart-2)" },
-  { id: "smart-schedule", name: "Smart Schedule", kind: "Projeto", color: "var(--color-chart-3)" },
+  { id: "smart-schedule", name: "Agenda externa", kind: "Projeto", color: "var(--color-chart-3)" },
   { id: "mentorias", name: "Mentorias", kind: "Trabalho", color: "var(--color-chart-2)" },
   { id: "familia", name: "Família", kind: "Pessoal", color: "var(--color-chart-4)" },
   { id: "exercicio", name: "Exercício", kind: "Saúde", color: "var(--color-chart-1)" },
@@ -60,7 +60,7 @@ export type Appointment = {
 export const todayAppointments: Appointment[] = [
   {
     id: "a1",
-    title: "Daily do time Spring",
+    title: "Reunião rápida do time",
     start: "09:00",
     end: "09:20",
     category: "spring",
@@ -69,29 +69,29 @@ export const todayAppointments: Appointment[] = [
   },
   {
     id: "a2",
-    title: "Deslocamento até o escritório",
+    title: "Deslocamento até o trabalho",
     start: "10:10",
     end: "11:00",
     category: "deslocamento",
-    place: "Linha Yamanote",
+    place: "Transporte público",
     fixed: true,
   },
   {
     id: "a3",
-    title: "Mentoria individual — Ana",
+    title: "Mentoria individual",
     start: "14:00",
     end: "15:00",
     category: "mentorias",
-    place: "Google Meet",
+    place: "Online",
     fixed: true,
   },
   {
     id: "a4",
-    title: "Aula de Engenharia de Software",
+    title: "Aula de projeto",
     start: "19:30",
     end: "21:30",
     category: "faculdade",
-    place: "Campus",
+    place: "Instituição de ensino",
     fixed: true,
   },
 ];
@@ -114,14 +114,14 @@ export const todayPriorities: Priority[] = [
   },
   {
     id: "p2",
-    title: "Revisar PR de autenticação do Spring",
+    title: "Revisar alterações pendentes do produto",
     category: "spring",
     estimateMin: 60,
     done: false,
   },
   {
     id: "p3",
-    title: "Estudar módulo de testes da Rocketseat",
+    title: "Estudar módulo de testes do curso profissional",
     category: "rocketseat",
     estimateMin: 45,
     done: false,
@@ -152,8 +152,8 @@ export const tasks: Task[] = [
   },
   {
     id: "t2",
-    title: "Revisar PR de autenticação",
-    project: "Spring — Plataforma",
+    title: "Revisar alterações pendentes do produto",
+    project: "Produto — Plataforma",
     category: "spring",
     priority: "Alta",
     due: "2026-09-02",
@@ -163,7 +163,7 @@ export const tasks: Task[] = [
   {
     id: "t3",
     title: "Módulo de testes automatizados",
-    project: "Rocketseat — Trilha",
+    project: "Curso profissional — Trilha",
     category: "rocketseat",
     priority: "Média",
     due: "2026-09-03",
@@ -173,7 +173,7 @@ export const tasks: Task[] = [
   {
     id: "t4",
     title: "Entregar trabalho de Engenharia de Software",
-    project: "Faculdade — 5º período",
+    project: "Curso — semestre atual",
     category: "faculdade",
     priority: "Alta",
     due: "2026-09-05",
@@ -192,8 +192,8 @@ export const tasks: Task[] = [
   },
   {
     id: "t6",
-    title: "Ajustar exportação de agenda",
-    project: "Smart Schedule",
+    title: "Ajustar exportação da agenda",
+    project: "Agenda externa",
     category: "smart-schedule",
     priority: "Baixa",
     due: "2026-09-08",
@@ -250,7 +250,7 @@ export const weekBlocks: WeekBlock[] = [
     day: 0,
     start: "09:00",
     end: "12:00",
-    title: "Spring — desenvolvimento",
+    title: "Desenvolvimento do produto",
     category: "spring",
     type: "fixo",
   },
@@ -268,7 +268,7 @@ export const weekBlocks: WeekBlock[] = [
     day: 0,
     start: "19:30",
     end: "21:30",
-    title: "Faculdade",
+    title: "Aula de projeto",
     category: "faculdade",
     type: "fixo",
   },
@@ -304,7 +304,7 @@ export const weekBlocks: WeekBlock[] = [
     day: 2,
     start: "09:00",
     end: "12:00",
-    title: "Spring — desenvolvimento",
+    title: "Desenvolvimento do produto",
     category: "spring",
     type: "fixo",
   },
@@ -313,7 +313,7 @@ export const weekBlocks: WeekBlock[] = [
     day: 2,
     start: "13:00",
     end: "14:30",
-    title: "Foco — Rocketseat",
+    title: "Foco — curso profissional",
     category: "rocketseat",
     type: "foco",
   },
@@ -322,7 +322,7 @@ export const weekBlocks: WeekBlock[] = [
     day: 3,
     start: "09:00",
     end: "11:00",
-    title: "Foco — Smart Schedule",
+    title: "Foco — organização da agenda",
     category: "smart-schedule",
     type: "foco",
   },
@@ -340,7 +340,7 @@ export const weekBlocks: WeekBlock[] = [
     day: 4,
     start: "09:00",
     end: "12:00",
-    title: "Spring — desenvolvimento",
+    title: "Desenvolvimento do produto",
     category: "spring",
     type: "fixo",
   },
@@ -404,14 +404,14 @@ export const planAlerts: PlanAlert[] = [
   {
     id: "al1",
     level: "conflito",
-    message: "Quarta: mentoria às 14h sobrepõe o bloco de foco do RUMO.",
+    message: "Quarta: compromisso às 14h sobrepõe o bloco de foco.",
   },
   {
     id: "al2",
     level: "sobrecarga",
     message: "Quarta ultrapassa a capacidade estimada em 30 minutos.",
   },
-  { id: "al3", level: "atencao", message: "Quinta tem 3 deslocamentos sem intervalo entre eles." },
+  { id: "al3", level: "atencao", message: "Quinta tem deslocamentos seguidos sem intervalo." },
 ];
 
 export type FocusSession = {
@@ -435,7 +435,7 @@ export const focusSessions: FocusSession[] = [
   {
     id: "f2",
     date: "01/09",
-    task: "Revisão de PRs",
+    task: "Revisão de alterações",
     category: "spring",
     plannedMin: 25,
     realMin: 18,
@@ -459,7 +459,7 @@ export const focusSessions: FocusSession[] = [
   {
     id: "f5",
     date: "30/08",
-    task: "Trabalho da faculdade",
+    task: "Trabalho do curso",
     category: "faculdade",
     plannedMin: 50,
     realMin: 35,
@@ -470,7 +470,7 @@ export const reviewData = {
   planned: [
     "12 tarefas planejadas para a semana",
     "8 blocos de foco reservados",
-    "3 sessões de estudo na Rocketseat",
+    "3 sessões de estudo no curso profissional",
     "2 treinos de força",
   ],
   done: [
@@ -479,15 +479,12 @@ export const reviewData = {
     "2 sessões de estudo concluídas",
     "2 treinos realizados",
   ],
-  postponed: ["Ajustar exportação de agenda (Smart Schedule)", "Compras da semana"],
-  unexpected: [
-    "Incidente em produção na quarta-feira (2h)",
-    "Atraso de trem na quinta-feira (40 min)",
-  ],
+  postponed: ["Ajustar exportação da agenda", "Compras da semana"],
+  unexpected: ["Imprevisto urgente no trabalho (2h)", "Atraso no deslocamento (40 min)"],
   wins: ["Fundação do RUMO definida sem virar noite", "Sono acima de 6h30 em 5 das 7 noites"],
   struggles: [
     "Blocos de foco à tarde interrompidos com frequência",
-    "Refeições em konbini acima do desejado",
+    "Refeições fora de casa acima do desejado",
   ],
   learnings: [
     "Blocos de 50 minutos funcionam melhor que 90 minutos",
@@ -508,9 +505,9 @@ export const dashboardData = {
     { week: "S35", planejadas: 12, concluidas: 9 },
   ],
   hoursByCategory: [
-    { name: "Spring", horas: 18 },
+    { name: "Trabalho principal", horas: 18 },
     { name: "Faculdade", horas: 8 },
-    { name: "Rocketseat", horas: 5 },
+    { name: "Curso profissional", horas: 5 },
     { name: "RUMO", horas: 6 },
     { name: "Mentorias", horas: 4 },
     { name: "Deslocamento", horas: 7 },
@@ -540,7 +537,7 @@ export const dashboardData = {
   commute: { planejadas: 7, realizadas: 8.5, unidade: "horas" },
   meals: [
     { name: "Em casa", value: 13 },
-    { name: "Konbini", value: 8 },
+    { name: "Fora de casa", value: 8 },
   ],
 };
 

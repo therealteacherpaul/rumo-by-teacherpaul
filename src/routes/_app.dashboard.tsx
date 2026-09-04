@@ -20,6 +20,7 @@ import { SectionCard } from "@/components/common/SectionCard";
 import { StatCard } from "@/components/common/StatCard";
 import { useDemoQuery } from "@/hooks/use-demo-query";
 import { dashboardData } from "@/lib/demo-data";
+import { formatDurationHours } from "@/lib/format-duration";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({
@@ -74,20 +75,20 @@ function DashboardPage() {
         />
         <StatCard
           label="Estudo"
-          value={`${data.study.realizadas}h`}
-          hint={`de ${data.study.planejadas}h planejadas`}
+          value={formatDurationHours(data.study.realizadas)}
+          hint={`de ${formatDurationHours(data.study.planejadas)} planejadas`}
           progress={pct(data.study.realizadas, data.study.planejadas)}
         />
         <StatCard
           label="Trabalho estratégico"
-          value={`${data.strategicWork.realizadas}h`}
-          hint={`de ${data.strategicWork.planejadas}h planejadas`}
+          value={formatDurationHours(data.strategicWork.realizadas)}
+          hint={`de ${formatDurationHours(data.strategicWork.planejadas)} planejadas`}
           progress={pct(data.strategicWork.realizadas, data.strategicWork.planejadas)}
         />
         <StatCard
           label="Deslocamento"
-          value={`${data.commute.realizadas}h`}
-          hint={`${data.commute.planejadas}h previstas — 1h30 acima`}
+          value={formatDurationHours(data.commute.realizadas)}
+          hint={`${formatDurationHours(data.commute.planejadas)} previstas — 1h30 acima`}
           progress={100}
         />
       </div>
@@ -197,7 +198,7 @@ function DashboardPage() {
         </SectionCard>
 
         <SectionCard
-          title="Refeições em casa versus konbini"
+          title="Refeições em casa versus fora de casa"
           description="Contagem de refeições na semana."
           className="lg:col-span-2"
         >

@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useDemoQuery } from "@/hooks/use-demo-query";
 import { DEMO_TIME_ZONE, formatDateLabel } from "@/lib/date-time";
+import { formatDurationHours } from "@/lib/format-duration";
 import {
   categoryName,
   energyCheckin,
@@ -90,7 +91,7 @@ function TodayPage() {
         />
         <StatCard
           label="Planejado x realizado"
-          value={`${plannedVsDoneToday.realizado}h / ${plannedVsDoneToday.planejado}h`}
+          value={`${formatDurationHours(plannedVsDoneToday.realizado)} / ${formatDurationHours(plannedVsDoneToday.planejado)}`}
           hint={`${ratio}% do plano executado até agora`}
           icon={<CheckCircle2 className="size-4" />}
           progress={ratio}
@@ -212,12 +213,16 @@ function TodayPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Planejado</span>
-                <span className="font-medium tabular-nums">{plannedVsDoneToday.planejado}h</span>
+                <span className="font-medium tabular-nums">
+                  {formatDurationHours(plannedVsDoneToday.planejado)}
+                </span>
               </div>
               <Progress value={100} className="h-1.5" />
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Realizado</span>
-                <span className="font-medium tabular-nums">{plannedVsDoneToday.realizado}h</span>
+                <span className="font-medium tabular-nums">
+                  {formatDurationHours(plannedVsDoneToday.realizado)}
+                </span>
               </div>
               <Progress value={ratio} className="h-1.5" />
             </div>

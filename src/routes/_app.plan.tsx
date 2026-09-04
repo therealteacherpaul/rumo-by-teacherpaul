@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useDemoQuery } from "@/hooks/use-demo-query";
 import { categoryName, planAlerts, weekBlocks, weekCapacity, weekDays } from "@/lib/demo-data";
+import { formatDurationHours } from "@/lib/format-duration";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/plan")({
@@ -34,6 +35,12 @@ const typeStyles: Record<string, string> = {
   fixo: "border-l-2 border-primary bg-secondary",
   foco: "border-l-2 border-gold bg-gold-soft/60",
   pessoal: "border-l-2 border-muted-foreground/40 bg-muted",
+};
+
+const alertLevelName: Record<string, string> = {
+  conflito: "Conflito",
+  sobrecarga: "Sobrecarga",
+  atencao: "Atenção",
 };
 
 function PlanPage() {
@@ -143,7 +150,7 @@ function PlanPage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">{d.day}</span>
                     <span className={cn("tabular-nums", over && "text-destructive")}>
-                      {d.committedH}h / {d.capacityH}h
+                      {formatDurationHours(d.committedH)} / {formatDurationHours(d.capacityH)}
                     </span>
                   </div>
                   <Progress value={Math.min(pct, 100)} className="mt-2 h-1.5" />
@@ -169,7 +176,7 @@ function PlanPage() {
                 />
                 <div className="min-w-0">
                   <Badge variant="outline" className="mb-1 capitalize">
-                    {a.level}
+                    {alertLevelName[a.level]}
                   </Badge>
                   <p className="text-sm">{a.message}</p>
                 </div>
