@@ -242,7 +242,7 @@ function FocusPage() {
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Duração planejada
               </p>
-              <div className="grid grid-cols-2 gap-2 sm:flex">
+              <div className="grid grid-cols-2 gap-2">
                 {durations.map((d) => (
                   <Button
                     key={d}
