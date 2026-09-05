@@ -3,6 +3,7 @@ import { Pause, Play, RotateCcw, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
+import { useCategories } from "@/hooks/use-categories";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
@@ -16,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDemoQuery } from "@/hooks/use-demo-query";
-import { categoryName, focusSessions, tasks } from "@/lib/demo-data";
+import { focusSessions, tasks } from "@/lib/demo-data";
 
 export const Route = createFileRoute("/_app/focus")({
   head: () => ({
@@ -43,6 +44,7 @@ type LocalFocusSession = (typeof focusSessions)[number] & {
 };
 
 function FocusPage() {
+  const { categoryName } = useCategories();
   const { data: sessions = [] } = useDemoQuery(["focus", "sessions"], () => focusSessions);
   const [localSessions, setLocalSessions] = useState<LocalFocusSession[]>(() =>
     sessions.map((session) => ({ ...session, status: "Concluída" })),

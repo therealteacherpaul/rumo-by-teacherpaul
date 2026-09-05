@@ -3,6 +3,7 @@ import { Check, ListFilter, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
+import { useCategories } from "@/hooks/use-categories";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
@@ -24,7 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDemoQuery } from "@/hooks/use-demo-query";
-import { categories, categoryName, tasks as demoTasks } from "@/lib/demo-data";
+import { tasks as demoTasks } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/tasks")({
@@ -60,6 +61,7 @@ const statusStyle: Record<string, string> = {
 };
 
 function TasksPage() {
+  const { categories, categoryName } = useCategories();
   const { data: tasks = [] } = useDemoQuery(["tasks"], () => demoTasks);
   const [localTasks, setLocalTasks] = useState(() => tasks.map((task) => ({ ...task })));
   const [query, setQuery] = useState("");

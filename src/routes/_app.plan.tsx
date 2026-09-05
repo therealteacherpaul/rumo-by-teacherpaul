@@ -11,13 +11,14 @@ import {
 } from "lucide-react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
+import { useCategories } from "@/hooks/use-categories";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
 import { StatCard } from "@/components/common/StatCard";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useDemoQuery } from "@/hooks/use-demo-query";
-import { categoryName, planAlerts, weekBlocks, weekCapacity, weekDays } from "@/lib/demo-data";
+import { planAlerts, weekBlocks, weekCapacity, weekDays } from "@/lib/demo-data";
 import { formatDurationHours } from "@/lib/format-duration";
 import { cn } from "@/lib/utils";
 
@@ -64,6 +65,7 @@ const semanticLegend = [
 ];
 
 function PlanPage() {
+  const { categoryName } = useCategories();
   const { data: blocks = [] } = useDemoQuery(["plan", "blocks"], () => weekBlocks);
   const { data: capacity = [] } = useDemoQuery(["plan", "capacity"], () => weekCapacity);
   const { data: alerts = [] } = useDemoQuery(["plan", "alerts"], () => planAlerts);

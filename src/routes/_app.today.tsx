@@ -4,6 +4,7 @@ import { Battery, CalendarClock, CheckCircle2, Circle, Target, Timer } from "luc
 import { useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
+import { useCategories } from "@/hooks/use-categories";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
@@ -46,6 +47,7 @@ export const Route = createFileRoute("/_app/today")({
 });
 
 function TodayPage() {
+  const { categoryName } = useCategories();
   const { dateLabel } = Route.useLoaderData();
   const { data: appointments = [] } = useDemoQuery(
     ["today", "appointments"],

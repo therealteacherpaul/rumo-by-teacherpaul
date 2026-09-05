@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plug, ShieldCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -31,7 +32,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { categories } from "@/lib/demo-data";
+import { useCategories } from "@/hooks/use-categories";
 
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({
@@ -74,6 +75,11 @@ const notificationItems = [
 ];
 
 function SettingsPage() {
+  const { categories, createCategory, renameCategory, activateCategory, deactivateCategory } =
+    useCategories();
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
+  const [categoryMessage, setCategoryMessage] = useState("");
   const form = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -239,24 +245,102 @@ function SettingsPage() {
             title="Categorias"
             description="Base para os relatórios de tempo por área da vida."
           >
-            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <p className="text-sm text-muted-foreground">
+              {categories.filter((category) => category.active).length}/{categories.length} ativas ·{" "}
+              {categories.filter((category) => category.source === "user").length}/4 personalizadas
+            </p>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              <Input
+                value={newCategoryName}
+                onChange={(event) => setNewCategoryName(event.target.value)}
+                placeholder="Nome da nova categoria"
+                aria-label="Nome da nova categoria"
+              />
+              <Button
+                type="button"
+                className="shrink-0"
+                onClick={() => {
+                  const result = createCategory(newCategoryName);
+                  setCategoryMessage(
+                    result.valid ? "Categoria criada nesta demonstração." : result.reason,
+                  );
+                  if (result.valid) setNewCategoryName("");
+                }}
+              >
+                Criar categoria
+              </Button>
+            </div>
+            <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((c) => (
-                <li
-                  key={c.id}
-                  className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-border/70 p-3"
-                >
-                  <span
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ background: c.color }}
-                    aria-hidden
-                  />
-                  <span className="min-w-0 break-words text-sm font-medium">{c.name}</span>
-                  <Badge variant="secondary" className="shrink-0">
-                    {c.kind}
-                  </Badge>
+                <li key={c.id} className="rounded-lg border border-border/70 p-3">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="size-2.5 shrink-0 rounded-full"
+                      style={{ background: c.color }}
+                      aria-hidden
+                    />
+                    <Input
+                      value={categoryNames[c.id] ?? c.name}
+                      onChange={(event) =>
+                        setCategoryNames((current) => ({ ...current, [c.id]: event.target.value }))
+                      }
+                      aria-label={`Nome da categoria ${c.name}`}
+                      className="h-8 min-w-0"
+                    />
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <Badge variant="secondary">
+                      {c.source === "system" ? "Sistema" : "Personalizada"}
+                    </Badge>
+                    <Badge variant={c.active ? "secondary" : "outline"}>
+                      {c.active ? "Ativa" : "Desativada"}
+                    </Badge>
+                    <Badge variant="outline">{c.kind}</Badge>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      aria-label={`Salvar nome da categoria ${c.name}`}
+                      onClick={() => {
+                        const result = renameCategory(c.id, categoryNames[c.id] ?? c.name);
+                        setCategoryMessage(
+                          result.valid ? "Categoria renomeada nesta demonstração." : result.reason,
+                        );
+                      }}
+                    >
+                      Renomear
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label={`${c.active ? "Desativar" : "Ativar"} categoria ${c.name}`}
+                      onClick={() => {
+                        const result = c.active ? deactivateCategory(c.id) : activateCategory(c.id);
+                        setCategoryMessage(
+                          result.valid
+                            ? `Categoria ${c.active ? "desativada" : "ativada"} nesta demonstração.`
+                            : result.reason,
+                        );
+                      }}
+                    >
+                      {c.active ? "Desativar" : "Ativar"}
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
+            {categoryMessage ? (
+              <p className="mt-4 text-sm text-success" role="status">
+                {categoryMessage}
+              </p>
+            ) : null}
+            <p className="mt-4 text-xs text-muted-foreground">
+              Alterações temporárias desta demonstração. Categorias desativadas continuam
+              disponíveis no histórico.
+            </p>
           </SectionCard>
         </TabsContent>
 
