@@ -88,7 +88,7 @@ function DashboardPage() {
         <StatCard
           label="Deslocamento"
           value={formatDurationHours(data.commute.realizadas)}
-          hint={`${formatDurationHours(data.commute.planejadas)} previstas — 1h30 acima`}
+          hint={`${formatDurationHours(data.commute.planejadas)} planejadas — 1h30 acima`}
           progress={100}
         />
       </div>
@@ -114,6 +114,14 @@ function DashboardPage() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-chart-5" aria-hidden /> Planejadas
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-chart-1" aria-hidden /> Concluídas
+            </span>
+          </div>
         </SectionCard>
 
         <SectionCard title="Horas por categoria" description="Distribuição do tempo na semana.">
@@ -138,6 +146,14 @@ function DashboardPage() {
                 <Bar dataKey="horas" fill="var(--color-chart-2)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <span className="h-0.5 w-4 bg-chart-5" aria-hidden /> Planejado
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="h-0.5 w-4 bg-chart-2" aria-hidden /> Realizado
+            </span>
           </div>
         </SectionCard>
 

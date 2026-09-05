@@ -1,5 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AlertTriangle, CalendarRange, Gauge, Timer } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarRange,
+  CheckCircle2,
+  CloudLightning,
+  Gauge,
+  PlayCircle,
+  Timer,
+  TrainFront,
+} from "lucide-react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -42,6 +51,17 @@ const alertLevelName: Record<string, string> = {
   sobrecarga: "Sobrecarga",
   atencao: "Atenção",
 };
+
+const semanticLegend = [
+  { label: "Planejado", icon: CalendarRange, className: "text-primary" },
+  { label: "Realizado", icon: CheckCircle2, className: "text-success" },
+  { label: "Em andamento", icon: PlayCircle, className: "text-warning" },
+  { label: "Concluído", icon: CheckCircle2, className: "text-success" },
+  { label: "Bloco de foco", icon: Timer, className: "text-gold-foreground" },
+  { label: "Deslocamento", icon: TrainFront, className: "text-muted-foreground" },
+  { label: "Conflito de horário", icon: AlertTriangle, className: "text-destructive" },
+  { label: "Imprevisto", icon: CloudLightning, className: "text-warning" },
+];
 
 function PlanPage() {
   const { data: blocks = [] } = useDemoQuery(["plan", "blocks"], () => weekBlocks);
@@ -133,6 +153,17 @@ function PlanPage() {
           <span className="flex items-center gap-2">
             <span className="h-3 w-1 rounded bg-muted-foreground/40" aria-hidden /> Pessoal
           </span>
+        </div>
+        <div
+          aria-label="Legenda dos estados e tipos de atividade"
+          className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-border pt-4 text-xs text-muted-foreground"
+        >
+          {semanticLegend.map(({ label, icon: Icon, className }) => (
+            <span key={label} className="flex items-center gap-1.5">
+              <Icon className={cn("size-3.5", className)} aria-hidden />
+              {label}
+            </span>
+          ))}
         </div>
       </SectionCard>
 
