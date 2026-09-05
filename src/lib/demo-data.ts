@@ -8,7 +8,7 @@
 
 export const DEMO_NOTICE = "Dados de exemplo — nenhum banco de dados conectado.";
 
-export type CategoryId =
+type SystemCategoryId =
   | "spring"
   | "deslocamento"
   | "faculdade"
@@ -22,30 +22,211 @@ export type CategoryId =
   | "domesticas"
   | "descanso";
 
+export type CategoryId = SystemCategoryId | `custom-${string}`;
+
+export type CategorySource = "system" | "user";
+
+export const CATEGORY_LIMITS = {
+  total: 20,
+  active: 16,
+  userCreated: 4,
+} as const;
+
+export type CategoryValidation = { valid: true } | { valid: false; reason: string };
+
 export type Category = {
   id: CategoryId;
   name: string;
   kind: "Trabalho" | "Estudo" | "Projeto" | "Pessoal" | "Saúde" | "Rotina";
   color: string;
+  source: CategorySource;
+  active: boolean;
 };
 
 export const categories: Category[] = [
-  { id: "spring", name: "Trabalho principal", kind: "Trabalho", color: "var(--color-chart-1)" },
-  { id: "deslocamento", name: "Deslocamento", kind: "Rotina", color: "var(--color-chart-5)" },
-  { id: "faculdade", name: "Faculdade", kind: "Estudo", color: "var(--color-chart-3)" },
-  { id: "rocketseat", name: "Curso profissional", kind: "Estudo", color: "var(--color-chart-4)" },
-  { id: "rumo", name: "RUMO", kind: "Projeto", color: "var(--color-chart-2)" },
-  { id: "smart-schedule", name: "Agenda externa", kind: "Projeto", color: "var(--color-chart-3)" },
-  { id: "mentorias", name: "Mentorias", kind: "Trabalho", color: "var(--color-chart-2)" },
-  { id: "familia", name: "Família", kind: "Pessoal", color: "var(--color-chart-4)" },
-  { id: "exercicio", name: "Exercício", kind: "Saúde", color: "var(--color-chart-1)" },
-  { id: "alimentacao", name: "Alimentação", kind: "Saúde", color: "var(--color-chart-5)" },
-  { id: "domesticas", name: "Tarefas domésticas", kind: "Rotina", color: "var(--color-chart-3)" },
-  { id: "descanso", name: "Descanso", kind: "Saúde", color: "var(--color-chart-4)" },
+  {
+    id: "spring",
+    name: "Trabalho principal",
+    kind: "Trabalho",
+    color: "var(--color-chart-1)",
+    source: "system",
+    active: true,
+  },
+  {
+    id: "deslocamento",
+    name: "Deslocamento",
+    kind: "Rotina",
+    color: "var(--color-chart-5)",
+    source: "system",
+    active: true,
+  },
+  {
+    id: "faculdade",
+    name: "Faculdade",
+    kind: "Estudo",
+    color: "var(--color-chart-3)",
+    source: "system",
+    active: true,
+  },
+  {
+    id: "rocketseat",
+    name: "Curso profissional",
+    kind: "Estudo",
+    color: "var(--color-chart-4)",
+    source: "system",
+    active: true,
+  },
+  {
+    id: "rumo",
+    name: "RUMO",
+    kind: "Projeto",
+    color: "var(--color-chart-2)",
+    source: "system",
+    active: true,
+  },
+  {
+    id: "smart-schedule",
+    name: "Agenda externa",
+    kind: "Projeto",
+    color: "var(--color-chart-3)",
+    source: "system",
+    active: true,
+  },
+  {
+    id: "mentorias",
+    name: "Mentorias",
+    kind: "Trabalho",
+    color: "var(--color-chart-2)",
+    source: "system",
+    active: true,
+  },
+  {
+    id: "familia",
+    name: "Família",
+    kind: "Pessoal",
+    color: "var(--color-chart-4)",
+    source: "system",
+    active: true,
+  },
+  {
+    id: "exercicio",
+    name: "Exercício",
+    kind: "Saúde",
+    color: "var(--color-chart-1)",
+    source: "system",
+    active: true,
+  },
+  {
+    id: "alimentacao",
+    name: "Alimentação",
+    kind: "Saúde",
+    color: "var(--color-chart-5)",
+    source: "system",
+    active: true,
+  },
+  {
+    id: "domesticas",
+    name: "Tarefas domésticas",
+    kind: "Rotina",
+    color: "var(--color-chart-3)",
+    source: "system",
+    active: true,
+  },
+  {
+    id: "descanso",
+    name: "Descanso",
+    kind: "Saúde",
+    color: "var(--color-chart-4)",
+    source: "system",
+    active: true,
+  },
 ];
 
 export const categoryName = (id: CategoryId) =>
   categories.find((c) => c.id === id)?.name ?? "Sem categoria";
+
+export const categoryColor = (id: CategoryId) =>
+  categories.find((c) => c.id === id)?.color ?? "var(--color-muted-foreground)";
+
+export const isCustomCategoryId = (id: CategoryId): id is `custom-${string}` =>
+  id.startsWith("custom-");
+
+const normalizedCategoryName = (name: string) => name.trim().toLocaleLowerCase();
+
+export const categoryCounts = (items: readonly Category[]) => ({
+  total: items.length,
+  active: items.filter((category) => category.active).length,
+  userCreated: items.filter((category) => category.source === "user").length,
+});
+
+export const validateCategoryTotalLimit = (items: readonly Category[]): CategoryValidation =>
+  items.length >= CATEGORY_LIMITS.total
+    ? { valid: false, reason: "O limite total de categorias foi atingido." }
+    : { valid: true };
+
+export const validateUserCategoryLimit = (items: readonly Category[]): CategoryValidation =>
+  categoryCounts(items).userCreated >= CATEGORY_LIMITS.userCreated
+    ? { valid: false, reason: "O limite de categorias criadas pelo usuário foi atingido." }
+    : { valid: true };
+
+export const validateActiveCategoryLimit = (items: readonly Category[]): CategoryValidation =>
+  categoryCounts(items).active >= CATEGORY_LIMITS.active
+    ? { valid: false, reason: "O limite de categorias ativas foi atingido." }
+    : { valid: true };
+
+export function hasDuplicateCategoryName(
+  items: readonly Category[],
+  name: string,
+  excludedId?: CategoryId,
+) {
+  const normalizedName = normalizedCategoryName(name);
+  return items.some(
+    (category) =>
+      category.id !== excludedId && normalizedCategoryName(category.name) === normalizedName,
+  );
+}
+
+export function validateCategoryCreation(
+  items: readonly Category[],
+  category: Pick<Category, "name" | "source" | "active">,
+): CategoryValidation {
+  if (!category.name.trim()) return { valid: false, reason: "O nome da categoria é obrigatório." };
+  if (hasDuplicateCategoryName(items, category.name)) {
+    return { valid: false, reason: "Já existe uma categoria com esse nome." };
+  }
+  const totalLimit = validateCategoryTotalLimit(items);
+  if (!totalLimit.valid) return totalLimit;
+  if (category.source === "user") {
+    const userLimit = validateUserCategoryLimit(items);
+    if (!userLimit.valid) return userLimit;
+  }
+  if (category.active) {
+    const activeLimit = validateActiveCategoryLimit(items);
+    if (!activeLimit.valid) return activeLimit;
+  }
+  return { valid: true };
+}
+
+export function validateCategoryActivation(
+  items: readonly Category[],
+  id: CategoryId,
+): CategoryValidation {
+  const category = items.find((item) => item.id === id);
+  if (!category) return { valid: false, reason: "Categoria não encontrada." };
+  if (category.active) return { valid: true };
+  const activeLimit = validateActiveCategoryLimit(items);
+  if (!activeLimit.valid) return activeLimit;
+  return { valid: true };
+}
+
+export function validateCategoryDeactivation(
+  items: readonly Category[],
+  id: CategoryId,
+): CategoryValidation {
+  const category = items.find((item) => item.id === id);
+  if (!category) return { valid: false, reason: "Categoria não encontrada." };
+  return { valid: true };
+}
 
 export type Appointment = {
   id: string;
