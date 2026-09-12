@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppFocusRouteImport } from './routes/_app.focus'
+import { Route as AppHabitsRouteImport } from './routes/_app.habits'
 import { Route as AppPlanRouteImport } from './routes/_app.plan'
 import { Route as AppReviewRouteImport } from './routes/_app.review'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
@@ -36,6 +37,11 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
 const AppFocusRoute = AppFocusRouteImport.update({
   id: '/focus',
   path: '/focus',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHabitsRoute = AppHabitsRouteImport.update({
+  id: '/habits',
+  path: '/habits',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPlanRoute = AppPlanRouteImport.update({
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof AppDashboardRoute
   '/focus': typeof AppFocusRoute
+  '/habits': typeof AppHabitsRoute
   '/plan': typeof AppPlanRoute
   '/review': typeof AppReviewRoute
   '/settings': typeof AppSettingsRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof AppDashboardRoute
   '/focus': typeof AppFocusRoute
+  '/habits': typeof AppHabitsRoute
   '/plan': typeof AppPlanRoute
   '/review': typeof AppReviewRoute
   '/settings': typeof AppSettingsRoute
@@ -90,6 +98,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/focus': typeof AppFocusRoute
+  '/_app/habits': typeof AppHabitsRoute
   '/_app/plan': typeof AppPlanRoute
   '/_app/review': typeof AppReviewRoute
   '/_app/settings': typeof AppSettingsRoute
@@ -102,6 +111,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/focus'
+    | '/habits'
     | '/plan'
     | '/review'
     | '/settings'
@@ -112,6 +122,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/focus'
+    | '/habits'
     | '/plan'
     | '/review'
     | '/settings'
@@ -123,6 +134,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_app/dashboard'
     | '/_app/focus'
+    | '/_app/habits'
     | '/_app/plan'
     | '/_app/review'
     | '/_app/settings'
@@ -163,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/focus'
       fullPath: '/focus'
       preLoaderRoute: typeof AppFocusRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/habits': {
+      id: '/_app/habits'
+      path: '/habits'
+      fullPath: '/habits'
+      preLoaderRoute: typeof AppHabitsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/plan': {
@@ -206,6 +225,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppFocusRoute: typeof AppFocusRoute
+  AppHabitsRoute: typeof AppHabitsRoute
   AppPlanRoute: typeof AppPlanRoute
   AppReviewRoute: typeof AppReviewRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -216,6 +236,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppFocusRoute: AppFocusRoute,
+  AppHabitsRoute: AppHabitsRoute,
   AppPlanRoute: AppPlanRoute,
   AppReviewRoute: AppReviewRoute,
   AppSettingsRoute: AppSettingsRoute,

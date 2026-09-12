@@ -140,7 +140,8 @@ const normalizedHabitName = (name: string) => name.trim().toLocaleLowerCase();
 
 const isFinitePositive = (value: number) => Number.isFinite(value) && value > 0;
 
-export const isCustomHabitId = (id: string): id is `custom-${string}` => id.startsWith("custom-");
+export const isCustomHabitId = (id: string): id is `custom-habit-${string}` =>
+  id.startsWith("custom-habit-");
 
 export const habitCounts = (items: readonly Habit[]) => ({
   total: items.length,
@@ -264,13 +265,13 @@ export function validateHabitDate(date: string): HabitValidation {
     : { valid: false, reason: "A data informada não é válida." };
 }
 
-export function nextCustomHabitId(items: readonly Habit[]): `custom-${number}` {
+export function nextCustomHabitId(items: readonly Habit[]): `custom-habit-${number}` {
   const next =
     items.reduce((max, habit) => {
-      const match = habit.id.match(/^custom-(\d+)$/);
+      const match = habit.id.match(/^custom-habit-(\d+)$/);
       return match ? Math.max(max, Number(match[1])) : max;
     }, 0) + 1;
-  return `custom-${next}`;
+  return `custom-habit-${next}`;
 }
 
 export function habitOccursOnDate(habit: Habit, date: string): boolean {

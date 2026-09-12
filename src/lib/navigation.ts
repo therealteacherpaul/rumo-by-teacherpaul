@@ -1,8 +1,17 @@
-import { CalendarRange, CheckSquare, Gauge, ListChecks, Settings, Sun, Timer } from "lucide-react";
+import {
+  CalendarRange,
+  CheckSquare,
+  Gauge,
+  ListChecks,
+  Settings,
+  Sun,
+  Timer,
+  Waves,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export type NavItem = {
-  to: "/today" | "/plan" | "/tasks" | "/focus" | "/review" | "/dashboard" | "/settings";
+  to: "/today" | "/plan" | "/tasks" | "/focus" | "/review" | "/dashboard" | "/settings" | "/habits";
   label: string;
   icon: LucideIcon;
   /** Presente na navegação inferior do celular. */
@@ -17,6 +26,7 @@ export const navItems: NavItem[] = [
   { to: "/review", label: "Revisão semanal", icon: ListChecks, mobile: true },
   { to: "/dashboard", label: "Dashboard", icon: Gauge, mobile: true },
   { to: "/settings", label: "Configurações", icon: Settings, mobile: true },
+  { to: "/habits", label: "Hábitos", icon: Waves, mobile: true },
 ];
 
 export const mobileNavItems = navItems.filter((item) => item.mobile);
