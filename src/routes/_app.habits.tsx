@@ -124,17 +124,29 @@ function HabitsPage() {
       ? buildTarget(form.targetType, form.minimumTarget, form.unit)
       : undefined;
     const frequency = buildFrequency(form.frequencyType, form.interval);
+    const updatePayload: Parameters<typeof updateHabit>[1] = {
+      name: form.name,
+      frequency,
+      target,
+    };
+    const createPayload: Omit<Habit, "id" | "minimumTarget"> & {
+      minimumTarget?: HabitTarget;
+    } = {
+      name: form.name,
+      source: "user",
+      active: true,
+      frequency,
+      target,
+      startDate: DEMO_DATE,
+    };
     const result = editingId
-      ? updateHabit(editingId, { name: form.name, frequency, target, minimumTarget })
-      : createHabit({
-          name: form.name,
-          source: "user",
-          active: true,
-          frequency,
-          target,
-          minimumTarget,
-          startDate: DEMO_DATE,
-        });
+      ? updateHabit(
+          editingId,
+          minimumTarget ? { ...updatePayload, minimumTarget } : updatePayload,
+        )
+      : createHabit(
+          minimumTarget ? { ...createPayload, minimumTarget } : createPayload,
+        );
     setMessage(
       result.valid
         ? `Hábito ${editingId ? "atualizado" : "criado"} nesta demonstração.`
@@ -236,31 +248,34 @@ function HabitsPage() {
         </div>
 
         <div className="mt-5 grid gap-4">
-          {visibleHabits.map((habit) => (
-            <HabitCard
-              key={habit.id}
-              habit={habit}
-              date={DEMO_DATE}
-              progress={getHabitProgress(habit, DEMO_DATE)}
-              status={getHabitStatus(habit, DEMO_DATE)}
-              checkIn={checkIns.find(
-                (item) => item.habitId === habit.id && item.date === DEMO_DATE,
-              )}
-              onEdit={() => startEditing(habit)}
-              editButtonRef={(element) => {
-                editButtonRefs.current[habit.id] = element;
-              }}
-              onToggle={() => {
-                const result = deactivateHabit(habit.id);
-                setMessage(result.valid ? "Hábito desativado nesta demonstração." : result.reason);
-              }}
-              onValue={(value) => setHabitValue(habit, value)}
-              onClear={() => {
-                clearCheckIn(habit.id, DEMO_DATE);
-                setMessage(`Registro de “${habit.name}” removido desta demonstração.`);
-              }}
-            />
-          ))}
+          {visibleHabits.map((habit) => {
+            const checkIn = checkIns.find(
+              (item) => item.habitId === habit.id && item.date === DEMO_DATE,
+            );
+            return (
+              <HabitCard
+                key={habit.id}
+                habit={habit}
+                date={DEMO_DATE}
+                progress={getHabitProgress(habit, DEMO_DATE)}
+                status={getHabitStatus(habit, DEMO_DATE)}
+                {...(checkIn ? { checkIn } : {})}
+                onEdit={() => startEditing(habit)}
+                editButtonRef={(element) => {
+                  editButtonRefs.current[habit.id] = element;
+                }}
+                onToggle={() => {
+                  const result = deactivateHabit(habit.id);
+                  setMessage(result.valid ? "Hábito desativado nesta demonstração." : result.reason);
+                }}
+                onValue={(value) => setHabitValue(habit, value)}
+                onClear={() => {
+                  clearCheckIn(habit.id, DEMO_DATE);
+                  setMessage(`Registro de “${habit.name}” removido desta demonstração.`);
+                }}
+              />
+            );
+          })}
           {visibleHabits.length === 0 && (
             <EmptyState
               icon={<Waves />}

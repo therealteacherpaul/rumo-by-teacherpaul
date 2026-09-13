@@ -121,7 +121,9 @@ export function HabitTodaySummary() {
               progress={getHabitProgress(habit, DEMO_DATE)}
               hasCheckIn={hasCheckIn}
               onComplete={() => updateCheckIn(habit, "principal")}
-              onLight={habit.minimumTarget ? () => updateCheckIn(habit, "leve") : undefined}
+              {...(habit.minimumTarget
+                ? { onLight: () => updateCheckIn(habit, "leve") }
+                : {})}
               onClear={() => {
                 clearCheckIn(habit.id, DEMO_DATE);
                 setMessage(`Registro de “${habit.name}” removido desta demonstração.`);
