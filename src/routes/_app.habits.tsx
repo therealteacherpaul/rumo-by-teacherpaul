@@ -418,7 +418,7 @@ function HabitCard({
   habit: Habit;
   status: keyof typeof statusLabels;
   progress: number;
-  checkIn?: { value: number };
+  checkIn?: { value: number } | undefined;
   date: string;
   onEdit: () => void;
   onToggle: () => void;

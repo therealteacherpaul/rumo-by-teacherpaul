@@ -25,7 +25,7 @@ export type Habit = {
   active: boolean;
   frequency: HabitFrequency;
   target: HabitTarget;
-  minimumTarget?: HabitTarget;
+  minimumTarget?: HabitTarget | undefined;
   startDate: string;
 };
 
