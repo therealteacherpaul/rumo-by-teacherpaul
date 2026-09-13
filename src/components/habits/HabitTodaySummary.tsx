@@ -158,7 +158,7 @@ function QuickHabit({
   progress: number;
   hasCheckIn: boolean;
   onComplete: () => void;
-  onLight?: () => void;
+  onLight?: (() => void) | undefined;
   onClear: () => void;
 }) {
   return (

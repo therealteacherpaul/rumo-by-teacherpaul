@@ -13,7 +13,7 @@ export type HabitUpdate = {
   name: string;
   frequency: HabitFrequency;
   target: HabitTarget;
-  minimumTarget?: HabitTarget;
+  minimumTarget?: HabitTarget | undefined;
 };
 
 export type HabitContextValue = {
