@@ -124,17 +124,23 @@ function HabitsPage() {
       ? buildTarget(form.targetType, form.minimumTarget, form.unit)
       : undefined;
     const frequency = buildFrequency(form.frequencyType, form.interval);
+    const updatePayload = { name: form.name, frequency, target };
+    const createPayload = {
+      name: form.name,
+      source: "user",
+      active: true,
+      frequency,
+      target,
+      startDate: DEMO_DATE,
+    };
     const result = editingId
-      ? updateHabit(editingId, { name: form.name, frequency, target, minimumTarget })
-      : createHabit({
-          name: form.name,
-          source: "user",
-          active: true,
-          frequency,
-          target,
-          minimumTarget,
-          startDate: DEMO_DATE,
-        });
+      ? updateHabit(
+          editingId,
+          minimumTarget ? { ...updatePayload, minimumTarget } : updatePayload,
+        )
+      : createHabit(
+          minimumTarget ? { ...createPayload, minimumTarget } : createPayload,
+        );
     setMessage(
       result.valid
         ? `Hábito ${editingId ? "atualizado" : "criado"} nesta demonstração.`
