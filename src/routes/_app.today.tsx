@@ -4,6 +4,7 @@ import { Battery, CalendarClock, CheckCircle2, Circle, Target, Timer } from "luc
 import { useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
+import { HabitTodaySummary } from "@/components/habits/HabitTodaySummary";
 import { useCategories } from "@/hooks/use-categories";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -76,6 +77,8 @@ function TodayPage() {
       />
 
       <DemoNotice />
+
+      <HabitTodaySummary />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
