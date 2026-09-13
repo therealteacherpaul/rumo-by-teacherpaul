@@ -242,31 +242,34 @@ function HabitsPage() {
         </div>
 
         <div className="mt-5 grid gap-4">
-          {visibleHabits.map((habit) => (
-            <HabitCard
-              key={habit.id}
-              habit={habit}
-              date={DEMO_DATE}
-              progress={getHabitProgress(habit, DEMO_DATE)}
-              status={getHabitStatus(habit, DEMO_DATE)}
-              checkIn={checkIns.find(
-                (item) => item.habitId === habit.id && item.date === DEMO_DATE,
-              )}
-              onEdit={() => startEditing(habit)}
-              editButtonRef={(element) => {
-                editButtonRefs.current[habit.id] = element;
-              }}
-              onToggle={() => {
-                const result = deactivateHabit(habit.id);
-                setMessage(result.valid ? "Hábito desativado nesta demonstração." : result.reason);
-              }}
-              onValue={(value) => setHabitValue(habit, value)}
-              onClear={() => {
-                clearCheckIn(habit.id, DEMO_DATE);
-                setMessage(`Registro de “${habit.name}” removido desta demonstração.`);
-              }}
-            />
-          ))}
+          {visibleHabits.map((habit) => {
+            const checkIn = checkIns.find(
+              (item) => item.habitId === habit.id && item.date === DEMO_DATE,
+            );
+            return (
+              <HabitCard
+                key={habit.id}
+                habit={habit}
+                date={DEMO_DATE}
+                progress={getHabitProgress(habit, DEMO_DATE)}
+                status={getHabitStatus(habit, DEMO_DATE)}
+                {...(checkIn ? { checkIn } : {})}
+                onEdit={() => startEditing(habit)}
+                editButtonRef={(element) => {
+                  editButtonRefs.current[habit.id] = element;
+                }}
+                onToggle={() => {
+                  const result = deactivateHabit(habit.id);
+                  setMessage(result.valid ? "Hábito desativado nesta demonstração." : result.reason);
+                }}
+                onValue={(value) => setHabitValue(habit, value)}
+                onClear={() => {
+                  clearCheckIn(habit.id, DEMO_DATE);
+                  setMessage(`Registro de “${habit.name}” removido desta demonstração.`);
+                }}
+              />
+            );
+          })}
           {visibleHabits.length === 0 && (
             <EmptyState
               icon={<Waves />}
