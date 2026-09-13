@@ -1,10 +1,10 @@
 import { Check, ExternalLink, Minus, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 
-import { DemoBadge } from "@/components/common/DemoBadge";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useHabits } from "@/hooks/use-habits";
 import {
   habitOccursOnDate,
@@ -13,18 +13,15 @@ import {
   type HabitStatus,
   type HabitTarget,
 } from "@/lib/habit-data";
-import { Link } from "@tanstack/react-router";
-import { useState } from "react";
 
 const DEMO_DATE = "2026-09-08";
-
+const MAX_QUICK_HABITS = 4;
 const statusLabels: Record<HabitStatus, string> = {
   nao_registrado: "Não registrado",
   em_progresso: "Em progresso",
   feito: "Feito",
   modo_leve: "Modo leve",
 };
-
 const statusVariants: Record<HabitStatus, "default" | "secondary" | "outline"> = {
   nao_registrado: "outline",
   em_progresso: "secondary",
@@ -44,7 +41,7 @@ function formatTarget(target: HabitTarget) {
   return `${target.target} ocorrência${target.target === 1 ? "" : "s"}`;
 }
 
-function valueForTarget(target: HabitTarget | undefined) {
+function targetValue(target: HabitTarget | undefined) {
   return target?.target ?? 1;
 }
 
@@ -56,7 +53,7 @@ export function HabitTodaySummary() {
   const statuses = habits.map((habit) => getHabitStatus(habit, DEMO_DATE));
   const completed = statuses.filter((status) => status === "feito").length;
   const light = statuses.filter((status) => status === "modo_leve").length;
-  const unregistered = statuses.filter((status) => status === "nao_registrado").length;
+  const pending = habits.length - completed - light;
   const overallProgress = habits.length
     ? Math.round(
         habits.reduce((total, habit) => total + getHabitProgress(habit, DEMO_DATE), 0) /
@@ -64,11 +61,11 @@ export function HabitTodaySummary() {
       )
     : 0;
 
-  const updateCheckIn = (habit: Habit, value: number, mode: "principal" | "leve") => {
+  const updateCheckIn = (habit: Habit, mode: "principal" | "leve") => {
     recordCheckIn({
       habitId: habit.id,
       date: DEMO_DATE,
-      value,
+      value: targetValue(mode === "principal" ? habit.target : habit.minimumTarget),
       completed: mode === "principal",
       mode,
     });
@@ -77,64 +74,54 @@ export function HabitTodaySummary() {
 
   return (
     <SectionCard
-      title="Hábitos de hoje"
-      description="Consistência flexível: a meta mínima também é um passo válido."
+      title="Hábitos"
+      description="Pequenos passos também contam."
       action={
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <DemoBadge />
-          <Button asChild variant="outline" size="sm">
-            <Link to="/habits">
-              Ver todos os hábitos
-              <ExternalLink className="ml-2 size-3.5" aria-hidden />
-            </Link>
-          </Button>
-        </div>
+        <Button asChild variant="outline" size="sm" aria-label="Abrir todos os hábitos">
+          <Link to="/habits">
+            Ver hábitos
+            <ExternalLink className="ml-2 size-3.5" aria-hidden />
+          </Link>
+        </Button>
       }
     >
-      <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-        <Summary label="Previstos" value={String(habits.length)} />
-        <Summary label="Concluídos" value={String(completed)} />
-        <Summary label="Modo leve" value={String(light)} />
-        <Summary label="Não registrados" value={String(unregistered)} />
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+        <span className="font-medium">
+          {completed + light} de {habits.length} concluídos hoje
+        </span>
+        <Badge variant="default">Feitos {completed}</Badge>
+        <Badge variant="secondary">Modo leve {light}</Badge>
+        <Badge variant="outline">Pendentes {pending}</Badge>
+        <span className="text-xs tabular-nums text-muted-foreground">{overallProgress}%</span>
       </div>
-      <div className="mt-5">
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Progresso geral do dia</span>
-          <span>{overallProgress}%</span>
-        </div>
+      <div
+        className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted"
+        role="progressbar"
+        aria-valuenow={overallProgress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Progresso geral dos hábitos"
+      >
         <div
-          className="mt-2 h-2 overflow-hidden rounded-full bg-muted"
-          role="progressbar"
-          aria-valuenow={overallProgress}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label="Progresso geral dos hábitos"
-        >
-          <div
-            className="h-full rounded-full bg-gold transition-all"
-            style={{ width: `${overallProgress}%` }}
-          />
-        </div>
+          className="h-full rounded-full bg-gold transition-all"
+          style={{ width: `${overallProgress}%` }}
+        />
       </div>
-      <ul className="mt-5 space-y-3">
-        {habits.map((habit) => {
+      <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+        {habits.slice(0, MAX_QUICK_HABITS).map((habit) => {
           const status = getHabitStatus(habit, DEMO_DATE);
-          const checkIn = checkIns.find(
+          const hasCheckIn = checkIns.some(
             (item) => item.habitId === habit.id && item.date === DEMO_DATE,
           );
           return (
-            <HabitTodayItem
+            <QuickHabit
               key={habit.id}
               habit={habit}
               status={status}
               progress={getHabitProgress(habit, DEMO_DATE)}
-              currentValue={checkIn?.value}
-              onComplete={() => updateCheckIn(habit, valueForTarget(habit.target), "principal")}
-              onLight={
-                habit.minimumTarget
-                  ? () => updateCheckIn(habit, valueForTarget(habit.minimumTarget), "leve")
-                  : undefined
-              }
+              hasCheckIn={hasCheckIn}
+              onComplete={() => updateCheckIn(habit, "principal")}
+              onLight={habit.minimumTarget ? () => updateCheckIn(habit, "leve") : undefined}
               onClear={() => {
                 clearCheckIn(habit.id, DEMO_DATE);
                 setMessage(`Registro de “${habit.name}” removido desta demonstração.`);
@@ -143,32 +130,25 @@ export function HabitTodaySummary() {
           );
         })}
       </ul>
+      {habits.length > MAX_QUICK_HABITS && (
+        <p className="mt-3 text-xs text-muted-foreground">
+          +{habits.length - MAX_QUICK_HABITS} hábitos · veja a lista completa em Hábitos.
+        </p>
+      )}
       {message && (
-        <p className="mt-4 text-xs text-success" role="status">
+        <p className="mt-3 text-xs text-success" role="status">
           {message}
         </p>
       )}
-      <p className="mt-4 text-xs text-muted-foreground">
-        Os registros são locais e desaparecem ao recarregar a demonstração.
-      </p>
     </SectionCard>
   );
 }
 
-function Summary({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg bg-muted/50 p-3">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 font-semibold tabular-nums">{value}</p>
-    </div>
-  );
-}
-
-function HabitTodayItem({
+function QuickHabit({
   habit,
   status,
   progress,
-  currentValue,
+  hasCheckIn,
   onComplete,
   onLight,
   onClear,
@@ -176,74 +156,66 @@ function HabitTodayItem({
   habit: Habit;
   status: HabitStatus;
   progress: number;
-  currentValue?: number;
+  hasCheckIn: boolean;
   onComplete: () => void;
   onLight?: () => void;
   onClear: () => void;
 }) {
-  const [value, setValue] = useState(currentValue === undefined ? "" : String(currentValue));
   return (
-    <li className="rounded-lg border border-border/70 p-3">
-      <div className="flex flex-wrap items-start justify-between gap-2">
+    <li className="min-w-0 rounded-lg border border-border/70 p-3">
+      <div className="flex min-w-0 items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="break-words text-sm font-medium">{habit.name}</p>
-          <p className="mt-0.5 break-words text-xs text-muted-foreground">
+          <p className="truncate text-sm font-medium" title={habit.name}>
+            {habit.name}
+          </p>
+          <p className="truncate text-xs text-muted-foreground">
             {formatFrequency(habit.frequency)} · {formatTarget(habit.target)}
           </p>
         </div>
-        <Badge variant={statusVariants[status]}>{statusLabels[status]}</Badge>
+        <Badge variant={statusVariants[status]} className="shrink-0">
+          {statusLabels[status]}
+        </Badge>
       </div>
-      <div className="mt-3 flex items-center gap-3">
-        <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-muted">
+      <div className="mt-2 flex items-center gap-2">
+        <div className="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-muted">
           <div className="h-full rounded-full bg-gold" style={{ width: `${progress}%` }} />
         </div>
-        <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{progress}%</span>
+        <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{progress}%</span>
       </div>
-      <div className="mt-3 flex flex-wrap items-end gap-2">
-        <div className="w-24">
-          <label htmlFor={`today-habit-${habit.id}`} className="text-xs text-muted-foreground">
-            Valor
-          </label>
-          <Input
-            id={`today-habit-${habit.id}`}
-            type="number"
-            min="0"
-            value={value}
-            onChange={(event) => setValue(event.target.value)}
-            className="mt-1 h-8"
-            aria-label={`Valor de ${habit.name}`}
-          />
-        </div>
+      <div className="mt-2 flex flex-wrap gap-1.5">
         <Button
           type="button"
           size="sm"
+          className="h-8 px-2.5 text-xs"
           onClick={onComplete}
           aria-label={`Marcar ${habit.name} como feito`}
         >
-          <Check className="mr-1.5 size-3.5" aria-hidden />
+          <Check className="mr-1 size-3.5" aria-hidden />
           Feito
         </Button>
         {onLight && (
           <Button
             type="button"
-            size="sm"
             variant="outline"
+            size="sm"
+            className="h-8 px-2.5 text-xs"
             onClick={onLight}
             aria-label={`Marcar ${habit.name} como modo leve`}
           >
-            <Minus className="mr-1.5 size-3.5" aria-hidden />
-            Modo leve
+            <Minus className="mr-1 size-3.5" aria-hidden />
+            Leve
           </Button>
         )}
         <Button
           type="button"
-          size="sm"
           variant="ghost"
+          size="sm"
+          className="h-8 px-2.5 text-xs"
           onClick={onClear}
-          disabled={!currentValue}
+          disabled={!hasCheckIn}
           aria-label={`Remover check-in de ${habit.name}`}
         >
-          <X className="mr-1.5 size-3.5" aria-hidden />
+          <X className="mr-1 size-3.5" aria-hidden />
           Remover
         </Button>
       </div>

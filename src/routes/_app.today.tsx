@@ -78,8 +78,6 @@ function TodayPage() {
 
       <DemoNotice />
 
-      <HabitTodaySummary />
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Prioridades"
@@ -274,6 +272,8 @@ function TodayPage() {
           </SectionCard>
         </div>
       </div>
+
+      <HabitTodaySummary />
     </div>
   );
 }
