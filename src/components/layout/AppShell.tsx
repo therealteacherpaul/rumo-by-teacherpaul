@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { mobileNavItems, navItems } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const { signOut } = useAuth();
 
   return (
     <CategoryProvider>
@@ -88,6 +90,16 @@ export function AppShell({ children }: { children: ReactNode }) {
                   )}
                   <span className={cn(collapsed && "sr-only")}>Recolher</span>
                 </Button>
+                {!collapsed && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => void signOut()}
+                    className="mt-1 w-full justify-center text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  >
+                    Sair
+                  </Button>
+                )}
               </div>
             </aside>
 
