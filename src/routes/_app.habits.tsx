@@ -1,16 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Check,
-  Edit3,
-  PauseCircle,
-  Play,
-  RotateCcw,
-  ToggleLeft,
-  ToggleRight,
-  Waves,
-  X,
-} from "lucide-react";
-import { useState } from "react";
+import { Check, Edit3, ToggleLeft, ToggleRight, Waves, X } from "lucide-react";
+import { useRef, useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -18,6 +8,13 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -28,12 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useHabits } from "@/hooks/use-habits";
-import {
-  habitCheckInStatus,
-  type Habit,
-  type HabitFrequency,
-  type HabitTarget,
-} from "@/lib/habit-data";
+import { type Habit, type HabitFrequency, type HabitTarget } from "@/lib/habit-data";
 
 export const Route = createFileRoute("/_app/habits")({
   head: () => ({
@@ -105,7 +97,10 @@ function HabitsPage() {
   const [filter, setFilter] = useState<Filter>("todos");
   const [message, setMessage] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [form, setForm] = useState<HabitForm>(() => emptyForm());
+  const editButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const lastEditingId = useRef<string | null>(null);
 
   const todayHabits = activeHabits.filter((habit) => habitOccursToday(habit));
   const completed = todayHabits.filter(
@@ -146,12 +141,17 @@ function HabitsPage() {
         : result.reason,
     );
     if (result.valid) {
-      setEditingId(null);
-      setForm(emptyForm());
+      if (editingId) {
+        setEditingId(null);
+        setEditDialogOpen(false);
+      } else {
+        setForm(emptyForm());
+      }
     }
   };
 
   const startEditing = (habit: Habit) => {
+    lastEditingId.current = habit.id;
     setEditingId(habit.id);
     setForm({
       name: habit.name,
@@ -162,6 +162,14 @@ function HabitsPage() {
       minimumTarget: habit.minimumTarget ? String(habit.minimumTarget.target) : "",
       unit: habit.target.type === "quantity" ? habit.target.unit : "vezes",
     });
+    setEditDialogOpen(true);
+    setMessage("");
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditDialogOpen(false);
+    setForm(emptyForm());
     setMessage("");
   };
 
@@ -239,6 +247,9 @@ function HabitsPage() {
                 (item) => item.habitId === habit.id && item.date === DEMO_DATE,
               )}
               onEdit={() => startEditing(habit)}
+              editButtonRef={(element) => {
+                editButtonRefs.current[habit.id] = element;
+              }}
               onToggle={() => {
                 const result = deactivateHabit(habit.id);
                 setMessage(result.valid ? "Hábito desativado nesta demonstração." : result.reason);
@@ -261,7 +272,7 @@ function HabitsPage() {
       </SectionCard>
 
       <SectionCard
-        title={editingId ? "Editar hábito" : "Novo hábito personalizado"}
+        title="Novo hábito personalizado"
         description="As alterações ficam apenas nesta sessão de demonstração."
       >
         <HabitForm
@@ -270,7 +281,6 @@ function HabitsPage() {
           onSave={saveHabit}
           editing={Boolean(editingId)}
           onCancel={() => {
-            setEditingId(null);
             setForm(emptyForm());
             setMessage("");
           }}
@@ -281,6 +291,44 @@ function HabitsPage() {
           </p>
         )}
       </SectionCard>
+
+      <Dialog
+        open={editDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) cancelEditing();
+          else setEditDialogOpen(true);
+        }}
+      >
+        <DialogContent
+          className="max-h-[90vh] overflow-y-auto"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            if (lastEditingId.current) editButtonRefs.current[lastEditingId.current]?.focus();
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>Editar hábito</DialogTitle>
+            <DialogDescription>
+              Atualize os dados de{" "}
+              {editingId ? habits.find((habit) => habit.id === editingId)?.name : "seu hábito"}. As
+              alterações ficam nesta demonstração.
+            </DialogDescription>
+          </DialogHeader>
+          <HabitForm
+            form={form}
+            setForm={setForm}
+            onSave={saveHabit}
+            editing
+            onCancel={cancelEditing}
+            inDialog
+          />
+          {message && (
+            <p className="text-sm text-destructive" role="alert">
+              {message}
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {inactiveHabits.length > 0 && (
         <SectionCard
@@ -365,6 +413,7 @@ function HabitCard({
   onToggle,
   onValue,
   onClear,
+  editButtonRef,
 }: {
   habit: Habit;
   status: keyof typeof statusLabels;
@@ -375,6 +424,7 @@ function HabitCard({
   onToggle: () => void;
   onValue: (value: string) => void;
   onClear: () => void;
+  editButtonRef: (element: HTMLButtonElement | null) => void;
 }) {
   const [value, setValue] = useState(checkIn ? String(checkIn.value) : "");
   return (
@@ -455,6 +505,7 @@ function HabitCard({
           variant="outline"
           size="sm"
           onClick={onEdit}
+          ref={editButtonRef}
           aria-label={`Editar ${habit.name}`}
         >
           <Edit3 className="mr-2 size-4" aria-hidden />
@@ -481,17 +532,19 @@ function HabitForm({
   onSave,
   editing,
   onCancel,
+  inDialog = false,
 }: {
   form: HabitForm;
   setForm: (value: HabitForm | ((current: HabitForm) => HabitForm)) => void;
   onSave: () => void;
   editing: boolean;
   onCancel: () => void;
+  inDialog?: boolean;
 }) {
   const update = <K extends keyof HabitForm>(key: K, value: HabitForm[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className={inDialog ? "grid gap-4" : "grid gap-4 sm:grid-cols-2"}>
       <div className="sm:col-span-2">
         <Label htmlFor="habit-name">Nome</Label>
         <Input
