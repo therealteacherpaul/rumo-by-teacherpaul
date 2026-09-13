@@ -124,8 +124,14 @@ function HabitsPage() {
       ? buildTarget(form.targetType, form.minimumTarget, form.unit)
       : undefined;
     const frequency = buildFrequency(form.frequencyType, form.interval);
-    const updatePayload = { name: form.name, frequency, target };
-    const createPayload = {
+    const updatePayload: Parameters<typeof updateHabit>[1] = {
+      name: form.name,
+      frequency,
+      target,
+    };
+    const createPayload: Omit<Habit, "id" | "minimumTarget"> & {
+      minimumTarget?: HabitTarget;
+    } = {
       name: form.name,
       source: "user",
       active: true,
