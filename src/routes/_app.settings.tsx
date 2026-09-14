@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
+import { EmptyState } from "@/components/common/EmptyState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCategories } from "@/hooks/use-categories";
+import { useAppDataMode } from "@/hooks/use-app-data-mode";
 
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({
@@ -75,6 +77,7 @@ const notificationItems = [
 ];
 
 function SettingsPage() {
+  const mode = useAppDataMode();
   const { categories, createCategory, renameCategory, activateCategory, deactivateCategory } =
     useCategories();
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -94,6 +97,16 @@ function SettingsPage() {
     toast("Alterações não salvas", {
       description: "Esta é uma demonstração visual. Nenhum banco de dados está conectado.",
     });
+
+  if (mode === "authenticated") {
+    return (
+      <EmptyState
+        icon={<ShieldCheck className="size-5" />}
+        title="Sua configuração começa vazia"
+        description="Preferências, categorias e integrações aparecerão aqui quando forem configuradas."
+      />
+    );
+  }
 
   return (
     <div className="space-y-8">

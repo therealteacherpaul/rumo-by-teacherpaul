@@ -10,10 +10,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { mobileNavItems, navItems } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { useAppDataMode } from "@/hooks/use-app-data-mode";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const { signOut } = useAuth();
+  const mode = useAppDataMode();
 
   return (
     <CategoryProvider>
@@ -42,6 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     <Link
                       key={to}
                       to={to}
+                      search={mode === "demo" ? { mode: "demo" } : {}}
                       activeProps={{
                         className:
                           "bg-sidebar-accent text-sidebar-accent-foreground border-l-2 border-sidebar-primary",
@@ -123,6 +126,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <li key={to}>
                     <Link
                       to={to}
+                      search={mode === "demo" ? { mode: "demo" } : {}}
                       activeProps={{ className: "text-foreground" }}
                       inactiveProps={{ className: "text-muted-foreground" }}
                       className="flex flex-col items-center gap-1 px-1 py-2.5 text-[11px]"

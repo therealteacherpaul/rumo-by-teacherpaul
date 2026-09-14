@@ -13,10 +13,12 @@ import {
   validateCategoryCreation,
   validateCategoryDeactivation,
 } from "@/lib/demo-data";
+import { useAppDataMode } from "@/hooks/use-app-data-mode";
 
 export function CategoryProvider({ children }: { children: ReactNode }) {
+  const mode = useAppDataMode();
   const [categories, setCategories] = useState<Category[]>(() =>
-    demoCategories.map((category) => ({ ...category })),
+    mode === "demo" ? demoCategories.map((category) => ({ ...category })) : [],
   );
 
   const value = useMemo<CategoryContextValue>(

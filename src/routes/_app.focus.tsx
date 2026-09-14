@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDemoQuery } from "@/hooks/use-demo-query";
+import { useAppDataMode } from "@/hooks/use-app-data-mode";
 import { focusSessions, tasks } from "@/lib/demo-data";
 
 export const Route = createFileRoute("/_app/focus")({
@@ -44,12 +45,13 @@ type LocalFocusSession = (typeof focusSessions)[number] & {
 };
 
 function FocusPage() {
+  const mode = useAppDataMode();
   const { categoryName } = useCategories();
   const { data: sessions = [] } = useDemoQuery(["focus", "sessions"], () => focusSessions);
   const [localSessions, setLocalSessions] = useState<LocalFocusSession[]>(() =>
     sessions.map((session) => ({ ...session, status: "Concluída" })),
   );
-  const [taskId, setTaskId] = useState(tasks[0]!.id);
+  const [taskId, setTaskId] = useState(tasks[0]?.id ?? "");
   const [duration, setDuration] = useState(50);
   const [isCustomDuration, setIsCustomDuration] = useState(false);
   const [customMinutes, setCustomMinutes] = useState("50");
@@ -139,6 +141,16 @@ function FocusPage() {
     ]);
     setFocusMessage("Sessão encerrada nesta demonstração. Nada foi salvo.");
   };
+
+  if (mode === "authenticated") {
+    return (
+      <EmptyState
+        icon={<Timer className="size-5" />}
+        title="Nenhuma sessão de foco ainda"
+        description="Suas sessões aparecerão aqui quando houver tarefas e foco registrados."
+      />
+    );
+  }
 
   return (
     <div className="space-y-8">

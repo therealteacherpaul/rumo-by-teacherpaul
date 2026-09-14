@@ -27,6 +27,7 @@ import {
 import { useDemoQuery } from "@/hooks/use-demo-query";
 import { tasks as demoTasks } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
+import { useAppDataMode } from "@/hooks/use-app-data-mode";
 
 export const Route = createFileRoute("/_app/tasks")({
   head: () => ({
@@ -61,6 +62,7 @@ const statusStyle: Record<string, string> = {
 };
 
 function TasksPage() {
+  const mode = useAppDataMode();
   const { categories, categoryName } = useCategories();
   const { data: tasks = [] } = useDemoQuery(["tasks"], () => demoTasks);
   const [localTasks, setLocalTasks] = useState(() => tasks.map((task) => ({ ...task })));
@@ -80,6 +82,16 @@ function TasksPage() {
       ),
     [localTasks, query, category, status],
   );
+
+  if (mode === "authenticated") {
+    return (
+      <EmptyState
+        icon={<Check className="size-5" />}
+        title="Nenhuma tarefa ainda"
+        description="Crie sua primeira tarefa para começar a acompanhar a execução."
+      />
+    );
+  }
 
   const projects = Array.from(new Set(localTasks.map((t) => t.project)));
 

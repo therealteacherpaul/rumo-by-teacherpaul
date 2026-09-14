@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useDemoQuery } from "@/hooks/use-demo-query";
+import { useAppDataMode } from "@/hooks/use-app-data-mode";
 import { DEMO_TIME_ZONE, formatDateLabel } from "@/lib/date-time";
 import { formatDurationHours } from "@/lib/format-duration";
 import {
@@ -48,6 +49,7 @@ export const Route = createFileRoute("/_app/today")({
 });
 
 function TodayPage() {
+  const mode = useAppDataMode();
   const { categoryName } = useCategories();
   const { dateLabel } = Route.useLoaderData();
   const { data: appointments = [] } = useDemoQuery(
@@ -61,6 +63,16 @@ function TodayPage() {
   );
   const [priorityMessage, setPriorityMessage] = useState("");
   const [energyMessage, setEnergyMessage] = useState("");
+
+  if (mode === "authenticated") {
+    return (
+      <EmptyState
+        icon={<Target className="size-5" />}
+        title="Seu dia começa vazio"
+        description="Adicione prioridades e compromissos para montar seu primeiro dia."
+      />
+    );
+  }
 
   const done = completedPriorityIds.size;
   const ratio =

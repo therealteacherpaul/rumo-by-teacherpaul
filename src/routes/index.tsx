@@ -54,7 +54,9 @@ function Landing() {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-6 sm:px-6">
         <RumoLogo />
         <Button asChild variant="secondary" size="sm">
-          <Link to="/login">Entrar na demonstração</Link>
+          <Link to="/today" search={{ mode: "demo" }}>
+            Entrar na demonstração
+          </Link>
         </Button>
       </header>
 
@@ -74,7 +76,7 @@ function Landing() {
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-gold text-gold-foreground hover:bg-gold/90">
-                <Link to="/login">
+                <Link to="/today" search={{ mode: "demo" }}>
                   Ver o RUMO por dentro
                   <ArrowRight className="size-4" aria-hidden />
                 </Link>
@@ -85,7 +87,9 @@ function Landing() {
                 variant="outline"
                 className="border-navy-foreground/25 bg-transparent text-navy-foreground hover:bg-navy-soft"
               >
-                <Link to="/login">Conhecer o planejamento</Link>
+                <Link to="/plan" search={{ mode: "demo" }}>
+                  Conhecer o planejamento
+                </Link>
               </Button>
             </div>
             <p className="mt-6 text-xs text-navy-foreground/55">

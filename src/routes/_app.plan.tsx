@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
+import { EmptyState } from "@/components/common/EmptyState";
+import { useAppDataMode } from "@/hooks/use-app-data-mode";
 import { useCategories } from "@/hooks/use-categories";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
@@ -65,6 +67,7 @@ const semanticLegend = [
 ];
 
 function PlanPage() {
+  const mode = useAppDataMode();
   const { categoryName } = useCategories();
   const { data: blocks = [] } = useDemoQuery(["plan", "blocks"], () => weekBlocks);
   const { data: capacity = [] } = useDemoQuery(["plan", "capacity"], () => weekCapacity);
@@ -74,6 +77,16 @@ function PlanPage() {
   const total = capacity.reduce((s, d) => s + d.capacityH, 0);
   const committedProgress = total > 0 ? (committed / total) * 100 : 0;
   const committedPct = Math.round(committedProgress);
+
+  if (mode === "authenticated") {
+    return (
+      <EmptyState
+        icon={<CalendarRange className="size-5" />}
+        title="Nenhum planejamento ainda"
+        description="Seus blocos e compromissos aparecerão aqui quando você começar a organizar a semana."
+      />
+    );
+  }
 
   return (
     <div className="space-y-8">

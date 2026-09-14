@@ -12,6 +12,8 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
+import { EmptyState } from "@/components/common/EmptyState";
+import { useAppDataMode } from "@/hooks/use-app-data-mode";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
 import { useDemoQuery } from "@/hooks/use-demo-query";
@@ -69,7 +71,18 @@ function ListBlock({
 }
 
 function ReviewPage() {
+  const mode = useAppDataMode();
   const { data } = useDemoQuery(["review"], () => reviewData);
+
+  if (mode === "authenticated") {
+    return (
+      <EmptyState
+        icon={<CalendarCheck className="size-5" />}
+        title="Ainda não há revisão"
+        description="Depois de registrar sua rotina, esta tela mostrará aprendizados do seu ciclo."
+      />
+    );
+  }
 
   return (
     <div className="space-y-8">

@@ -15,6 +15,8 @@ import {
 } from "recharts";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
+import { EmptyState } from "@/components/common/EmptyState";
+import { useAppDataMode } from "@/hooks/use-app-data-mode";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
 import { StatCard } from "@/components/common/StatCard";
@@ -52,7 +54,18 @@ const tooltipStyle = {
 };
 
 function DashboardPage() {
+  const mode = useAppDataMode();
   const { data } = useDemoQuery(["dashboard"], () => dashboardData);
+
+  if (mode === "authenticated") {
+    return (
+      <EmptyState
+        icon={<LineChart className="size-5" />}
+        title="Dashboard sem dados ainda"
+        description="Seus indicadores aparecerão quando você registrar atividades."
+      />
+    );
+  }
 
   const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : 0);
 
