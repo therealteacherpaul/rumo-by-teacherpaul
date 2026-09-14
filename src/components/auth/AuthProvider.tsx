@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async signIn(email: string, password: string) {
       if (!supabase) return { error: "Supabase Auth não está configurado neste ambiente." };
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      return { error: error ? authErrorMessage("login") : null };
+      return { error: error ? authErrorMessage("login", error) : null };
     },
     async signUp(email: string, password: string) {
       if (!supabase)
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
       const { data, error } = await supabase.auth.signUp({ email, password });
       return {
-        error: error ? authErrorMessage("signup") : null,
+        error: error ? authErrorMessage("signup", error) : null,
         needsConfirmation: Boolean(!error && !data.session),
       };
     },
