@@ -14,7 +14,194 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          active: boolean
+          color: string
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          slot: number
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          color?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          name: string
+          slot: number
+          source?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          color?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          slot?: number
+          source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      priorities: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          date: string
+          done: boolean
+          id: string
+          slot: number
+          task_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          date: string
+          done?: boolean
+          id?: string
+          slot: number
+          task_id?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          date?: string
+          done?: boolean
+          id?: string
+          slot?: number
+          task_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "priorities_user_id_category_id_fkey"
+            columns: ["user_id", "category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["user_id", "id"]
+          },
+          {
+            foreignKeyName: "priorities_user_id_task_id_fkey"
+            columns: ["user_id", "task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["user_id", "id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          active: boolean
+          category_id: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_user_id_category_id_fkey"
+            columns: ["user_id", "category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["user_id", "id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          archived: boolean
+          category_id: string
+          created_at: string
+          due_date: string | null
+          id: string
+          priority: string
+          project_id: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archived?: boolean
+          category_id: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          priority?: string
+          project_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archived?: boolean
+          category_id?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          priority?: string
+          project_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_user_id_category_id_fkey"
+            columns: ["user_id", "category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["user_id", "id"]
+          },
+          {
+            foreignKeyName: "tasks_user_id_project_id_fkey"
+            columns: ["user_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["user_id", "id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
