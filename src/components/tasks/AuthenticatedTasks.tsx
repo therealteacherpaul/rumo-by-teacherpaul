@@ -114,7 +114,7 @@ export function AuthenticatedTasks() {
               Comece com uma ação pequena. Escolha uma categoria e crie sua primeira tarefa.
             </p>
             <Button className="mt-4" disabled={data.pending} onClick={() => setEditor("new")}>
-              Criar primeira tarefa
+              Nova tarefa
             </Button>
           </div>
         ) : !filtered.length ? (

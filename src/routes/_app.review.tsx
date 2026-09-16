@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import {
   ArrowRightCircle,
   CalendarCheck,
@@ -16,6 +17,7 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { useAppDataMode } from "@/hooks/use-app-data-mode";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
+import { Button } from "@/components/ui/button";
 import { useDemoQuery } from "@/hooks/use-demo-query";
 import { reviewData } from "@/lib/demo-data";
 
@@ -78,8 +80,21 @@ function ReviewPage() {
     return (
       <EmptyState
         icon={<CalendarCheck className="size-5" />}
-        title="Ainda não há revisão"
-        description="Depois de registrar sua rotina, esta tela mostrará aprendizados do seu ciclo."
+        title="Sua revisão será construída com o uso"
+        description="Registre tarefas e hábitos ao longo da semana. A revisão reunirá o que foi planejado, realizado e ajustado."
+        action={
+          <div className="flex flex-col justify-center gap-2 sm:flex-row">
+            <Button asChild>
+              <Link to="/tasks">Ir para tarefas</Link>
+            </Button>
+            <Link
+              className="self-center text-sm text-muted-foreground underline underline-offset-4"
+              to="/habits"
+            >
+              Ver hábitos
+            </Link>
+          </div>
+        }
       />
     );
   }

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Pause, Play, RotateCcw, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -146,8 +147,13 @@ function FocusPage() {
     return (
       <EmptyState
         icon={<Timer className="size-5" />}
-        title="Nenhuma sessão de foco ainda"
-        description="Suas sessões aparecerão aqui quando houver tarefas e foco registrados."
+        title="Crie uma tarefa para iniciar um bloco de foco"
+        description="Escolha uma tarefa real, defina a duração e comece quando estiver pronto."
+        action={
+          <Button asChild>
+            <Link to="/tasks">Criar tarefa</Link>
+          </Button>
+        }
       />
     );
   }

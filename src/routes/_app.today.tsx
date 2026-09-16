@@ -68,8 +68,25 @@ function TodayPage() {
     return (
       <EmptyState
         icon={<Target className="size-5" />}
-        title="Seu dia começa vazio"
-        description="Adicione prioridades e compromissos para montar seu primeiro dia."
+        title="Defina o que importa hoje"
+        description="Escolha até três prioridades para dar direção ao seu dia. Você pode começar criando uma tarefa."
+        action={
+          <div className="flex flex-col justify-center gap-2 sm:flex-row">
+            <Button asChild>
+              <Link to="/tasks">Adicionar prioridade</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/tasks">Criar tarefa</Link>
+            </Button>
+            <Link
+              className="self-center text-xs text-muted-foreground underline underline-offset-4"
+              to="/today"
+              search={{ mode: "demo" }}
+            >
+              Ver uma demonstração
+            </Link>
+          </div>
+        }
       />
     );
   }

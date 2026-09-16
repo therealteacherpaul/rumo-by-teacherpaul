@@ -35,6 +35,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCategories } from "@/hooks/use-categories";
 import { useAppDataMode } from "@/hooks/use-app-data-mode";
+import { AuthenticatedCategoryStart } from "@/components/settings/AuthenticatedCategoryStart";
 
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({
@@ -100,11 +101,14 @@ function SettingsPage() {
 
   if (mode === "authenticated") {
     return (
-      <EmptyState
-        icon={<ShieldCheck className="size-5" />}
-        title="Sua configuração começa vazia"
-        description="Preferências, categorias e integrações aparecerão aqui quando forem configuradas."
-      />
+      <div className="space-y-8">
+        <PageHeader
+          showDemoBadge={false}
+          title="Configurações"
+          description="Personalize o RUMO ao seu ritmo."
+        />
+        <AuthenticatedCategoryStart />
+      </div>
     );
   }
 

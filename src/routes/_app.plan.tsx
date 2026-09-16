@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
   CalendarRange,
@@ -23,6 +24,7 @@ import { useDemoQuery } from "@/hooks/use-demo-query";
 import { planAlerts, weekBlocks, weekCapacity, weekDays } from "@/lib/demo-data";
 import { formatDurationHours } from "@/lib/format-duration";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_app/plan")({
   head: () => ({
@@ -82,8 +84,18 @@ function PlanPage() {
     return (
       <EmptyState
         icon={<CalendarRange className="size-5" />}
-        title="Nenhum planejamento ainda"
-        description="Seus blocos e compromissos aparecerão aqui quando você começar a organizar a semana."
+        title="Comece pelo primeiro projeto ou tarefa"
+        description="O planejamento ganha forma a partir do que você decide fazer. Crie um projeto para agrupar tarefas ou comece por uma ação simples."
+        action={
+          <div className="flex flex-col justify-center gap-2 sm:flex-row">
+            <Button asChild>
+              <Link to="/tasks">Criar projeto</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/tasks">Criar tarefa</Link>
+            </Button>
+          </div>
+        }
       />
     );
   }

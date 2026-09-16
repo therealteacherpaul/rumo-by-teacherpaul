@@ -23,6 +23,9 @@ import { StatCard } from "@/components/common/StatCard";
 import { useDemoQuery } from "@/hooks/use-demo-query";
 import { dashboardData } from "@/lib/demo-data";
 import { formatDurationHours } from "@/lib/format-duration";
+import { useHabits } from "@/hooks/use-habits";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({
@@ -56,14 +59,38 @@ const tooltipStyle = {
 function DashboardPage() {
   const mode = useAppDataMode();
   const { data } = useDemoQuery(["dashboard"], () => dashboardData);
+  const { activeHabits } = useHabits();
 
   if (mode === "authenticated") {
     return (
-      <EmptyState
-        icon={<LineChart className="size-5" />}
-        title="Dashboard sem dados ainda"
-        description="Seus indicadores aparecerão quando você registrar atividades."
-      />
+      <div className="space-y-8">
+        <PageHeader
+          showDemoBadge={false}
+          title="Dashboard"
+          description="Acompanhe seus primeiros sinais de ritmo conforme usar o RUMO."
+        />
+        <SectionCard
+          title="Seu ponto de partida"
+          description="Os indicadores começam em zero e ganham contexto com tarefas, foco e hábitos registrados."
+        >
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ["Tarefas concluídas", "0"],
+              ["Projetos ativos", "0"],
+              ["Tempo de foco", "0"],
+              ["Hábitos acompanhados", String(activeHabits.length)],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-lg border border-border/70 p-4">
+                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
+              </div>
+            ))}
+          </div>
+          <Button asChild className="mt-5">
+            <Link to="/tasks">Criar primeira tarefa</Link>
+          </Button>
+        </SectionCard>
+      </div>
     );
   }
 
