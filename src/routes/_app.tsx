@@ -22,7 +22,10 @@ function AppLayout() {
     );
   if (!user && mode !== "demo") return <Navigate to="/login" replace />;
   return (
-    <AppDataModeProvider mode={mode === "demo" ? "demo" : "authenticated"}>
+    <AppDataModeProvider
+      key={mode === "demo" ? "demo" : user!.id}
+      mode={mode === "demo" ? "demo" : "authenticated"}
+    >
       <AppShell>
         <Outlet />
       </AppShell>

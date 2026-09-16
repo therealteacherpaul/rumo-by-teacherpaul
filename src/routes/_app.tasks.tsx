@@ -1,3 +1,6 @@
+import { AuthenticatedTasks } from "@/components/tasks/AuthenticatedTasks";
+import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
+import { useAuth } from "@/hooks/use-auth";
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, ListFilter, Search } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -63,6 +66,17 @@ const statusStyle: Record<string, string> = {
 
 function TasksPage() {
   const mode = useAppDataMode();
+  const { user } = useAuth();
+  if (mode === "demo") return <DemoTasksPage />;
+  if (!user) return null;
+  return (
+    <TaskDataProvider key={user.id} userId={user.id}>
+      <AuthenticatedTasks />
+    </TaskDataProvider>
+  );
+}
+
+function DemoTasksPage() {
   const { categories, categoryName } = useCategories();
   const { data: tasks = [] } = useDemoQuery(["tasks"], () => demoTasks);
   const [localTasks, setLocalTasks] = useState(() => tasks.map((task) => ({ ...task })));
@@ -82,16 +96,6 @@ function TasksPage() {
       ),
     [localTasks, query, category, status],
   );
-
-  if (mode === "authenticated") {
-    return (
-      <EmptyState
-        icon={<Check className="size-5" />}
-        title="Nenhuma tarefa ainda"
-        description="Crie sua primeira tarefa para começar a acompanhar a execução."
-      />
-    );
-  }
 
   const projects = Array.from(new Set(localTasks.map((t) => t.project)));
 

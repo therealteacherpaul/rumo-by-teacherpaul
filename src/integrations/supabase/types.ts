@@ -151,6 +151,7 @@ export type Database = {
           category_id: string
           created_at: string
           due_date: string | null
+          estimate_min: number
           id: string
           priority: string
           project_id: string | null
@@ -164,6 +165,7 @@ export type Database = {
           category_id: string
           created_at?: string
           due_date?: string | null
+          estimate_min?: number
           id?: string
           priority?: string
           project_id?: string | null
@@ -177,6 +179,7 @@ export type Database = {
           category_id?: string
           created_at?: string
           due_date?: string | null
+          estimate_min?: number
           id?: string
           priority?: string
           project_id?: string | null
