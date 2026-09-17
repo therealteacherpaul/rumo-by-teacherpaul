@@ -4,6 +4,7 @@ import { Battery, CalendarClock, CheckCircle2, Circle, Target, Timer } from "luc
 import { useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
+import { AuthenticatedPriorities } from "@/components/today/AuthenticatedPriorities";
 import { HabitTodaySummary } from "@/components/habits/HabitTodaySummary";
 import { useCategories } from "@/hooks/use-categories";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -66,28 +67,10 @@ function TodayPage() {
 
   if (mode === "authenticated") {
     return (
-      <EmptyState
-        icon={<Target className="size-5" />}
-        title="Defina o que importa hoje"
-        description="Escolha até três prioridades para dar direção ao seu dia. Você pode começar criando uma tarefa."
-        action={
-          <div className="flex flex-col justify-center gap-2 sm:flex-row">
-            <Button asChild>
-              <Link to="/tasks">Adicionar prioridade</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to="/tasks">Criar tarefa</Link>
-            </Button>
-            <Link
-              className="self-center text-xs text-muted-foreground underline underline-offset-4"
-              to="/today"
-              search={{ mode: "demo" }}
-            >
-              Ver uma demonstração
-            </Link>
-          </div>
-        }
-      />
+      <div className="space-y-6">
+        <PageHeader showDemoBadge={false} title="Hoje" description={dateLabel} />
+        <AuthenticatedPriorities />
+      </div>
     );
   }
 

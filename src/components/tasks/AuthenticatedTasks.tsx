@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Button } from "@/components/ui/button";
@@ -257,6 +257,20 @@ function TaskEditor({ task, onSaved }: { task: UserTask | null; onSaved: () => v
     estimate_min: task?.estimate_min ?? 30,
   }));
   const [error, setError] = useState("");
+  const [quickCategory, setQuickCategory] = useState(false);
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryMessage, setCategoryMessage] = useState("");
+  const [pendingCategoryName, setPendingCategoryName] = useState("");
+  useEffect(() => {
+    if (!pendingCategoryName) return;
+    const created = data.categories.find(
+      (item) => item.name.trim().toLocaleLowerCase() === pendingCategoryName.toLocaleLowerCase(),
+    );
+    if (created) {
+      setDraft((current) => ({ ...current, category_id: created.id }));
+      setPendingCategoryName("");
+    }
+  }, [data.categories, pendingCategoryName]);
   const categories = data.categories.filter((item) => item.active || item.id === task?.category_id);
   const projects = data.projects.filter((item) => item.active || item.id === task?.project_id);
   return (
@@ -281,11 +295,10 @@ function TaskEditor({ task, onSaved }: { task: UserTask | null; onSaved: () => v
       </label>
       <DataSelect
         label="Categoria"
-        required
-        value={draft.category_id}
+        value={draft.category_id ?? ""}
         onChange={(event) => setDraft({ ...draft, category_id: event.target.value })}
       >
-        <option value="">Selecione uma categoria</option>
+        <option value="">Sem categoria</option>
         {categories.map((item) => (
           <option key={item.id} value={item.id}>
             {item.name}
@@ -293,11 +306,52 @@ function TaskEditor({ task, onSaved }: { task: UserTask | null; onSaved: () => v
           </option>
         ))}
       </DataSelect>
-      {!categories.length && (
-        <p className="text-sm">
-          Você precisa de uma categoria ativa. Feche este formulário e use “Categorias de tarefas”
-          abaixo da lista para criar ou reativar uma categoria.
-        </p>
+      <button
+        type="button"
+        className="text-left text-xs text-gold underline underline-offset-4"
+        onClick={() => setQuickCategory((open) => !open)}
+      >
+        + Criar categoria
+      </button>
+      {quickCategory && (
+        <div className="flex flex-wrap gap-2">
+          <Input
+            value={categoryName}
+            maxLength={100}
+            placeholder="Nome da categoria"
+            aria-label="Nome da categoria rápida"
+            onChange={(event) => setCategoryName(event.target.value)}
+          />
+          <Button
+            type="button"
+            size="sm"
+            disabled={data.pending || !categoryName.trim()}
+            onClick={async () => {
+              const result = await data.createCategory(categoryName);
+              setCategoryMessage(result.valid ? "Categoria criada." : result.reason);
+              if (result.valid) {
+                setPendingCategoryName(categoryName.trim());
+                const created = data.categories.find(
+                  (item) =>
+                    item.name.trim().toLocaleLowerCase() ===
+                    categoryName.trim().toLocaleLowerCase(),
+                );
+                if (created) setDraft((current) => ({ ...current, category_id: created.id }));
+                setCategoryName("");
+              }
+            }}
+          >
+            Criar
+          </Button>
+          <Button type="button" size="sm" variant="ghost" onClick={() => setQuickCategory(false)}>
+            Cancelar
+          </Button>
+          {categoryMessage && (
+            <p role="status" className="w-full text-xs text-muted-foreground">
+              {categoryMessage}
+            </p>
+          )}
+        </div>
       )}
       <DataSelect
         label="Projeto (opcional)"
@@ -367,7 +421,6 @@ function TaskEditor({ task, onSaved }: { task: UserTask | null; onSaved: () => v
         disabled={
           data.pending ||
           !draft.title.trim() ||
-          !draft.category_id ||
           !Number.isInteger(draft.estimate_min) ||
           draft.estimate_min < 0
         }

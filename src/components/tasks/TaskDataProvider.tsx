@@ -174,14 +174,13 @@ export function TaskDataProvider({ userId, children }: { userId: string; childre
     saveTask: (draft, id) => {
       if (
         !draft.title.trim() ||
-        !draft.category_id ||
         !Number.isInteger(draft.estimate_min) ||
         draft.estimate_min < 0 ||
         draft.estimate_min > 2147483647
       )
         return Promise.resolve({
           valid: false,
-          reason: "Confira título, categoria e duração em minutos inteiros.",
+          reason: "Confira título e duração em minutos inteiros.",
         });
       return write(() =>
         id
