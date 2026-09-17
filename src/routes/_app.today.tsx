@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
 import { AuthenticatedPriorities } from "@/components/today/AuthenticatedPriorities";
+import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
 import { HabitTodaySummary } from "@/components/habits/HabitTodaySummary";
 import { useCategories } from "@/hooks/use-categories";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -17,6 +18,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useDemoQuery } from "@/hooks/use-demo-query";
 import { useAppDataMode } from "@/hooks/use-app-data-mode";
+import { useAuth } from "@/hooks/use-auth";
 import { DEMO_TIME_ZONE, formatDateLabel } from "@/lib/date-time";
 import { formatDurationHours } from "@/lib/format-duration";
 import {
@@ -51,6 +53,7 @@ export const Route = createFileRoute("/_app/today")({
 
 function TodayPage() {
   const mode = useAppDataMode();
+  const { user } = useAuth();
   const { categoryName } = useCategories();
   const { dateLabel } = Route.useLoaderData();
   const { data: appointments = [] } = useDemoQuery(
@@ -69,7 +72,11 @@ function TodayPage() {
     return (
       <div className="space-y-6">
         <PageHeader showDemoBadge={false} title="Hoje" description={dateLabel} />
-        <AuthenticatedPriorities />
+        {user && (
+          <TaskDataProvider key={user.id} userId={user.id}>
+            <AuthenticatedPriorities />
+          </TaskDataProvider>
+        )}
       </div>
     );
   }
