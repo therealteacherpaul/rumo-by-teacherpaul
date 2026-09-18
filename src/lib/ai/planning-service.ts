@@ -53,7 +53,7 @@ export function validatePlan(
     );
   return plan;
 }
-export function createPlanningService(provider: PlanningProvider, timeoutMs = 20000) {
+export function createPlanningService(provider: PlanningProvider, timeoutMs = 60000) {
   return {
     async generatePlan(
       input: PlanningInput,
