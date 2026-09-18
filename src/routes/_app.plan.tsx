@@ -84,8 +84,8 @@ function PlanPage() {
     return (
       <EmptyState
         icon={<CalendarRange className="size-5" />}
-        title="Comece pelo primeiro projeto ou tarefa"
-        description="O planejamento ganha forma a partir do que você decide fazer. Crie um projeto para agrupar tarefas ou comece por uma ação simples."
+        title="Planejamento ainda não integrado"
+        description="Suas tarefas e projetos estão disponíveis em Tarefas. A organização semanal com dados reais ainda não está disponível."
         action={
           <div className="flex flex-col justify-center gap-2 sm:flex-row">
             <Button asChild>

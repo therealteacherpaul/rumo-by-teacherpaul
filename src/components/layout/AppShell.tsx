@@ -32,6 +32,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="flex h-16 items-center px-4">
                 <Link
                   to="/today"
+                  search={mode === "demo" ? { mode: "demo" } : {}}
                   className="min-w-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
                 >
                   <RumoLogo compact={collapsed} className="text-sidebar-foreground" />
@@ -109,7 +110,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             {/* Conteúdo */}
             <div className="flex min-w-0 flex-1 flex-col">
               <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-border bg-background/90 px-4 backdrop-blur md:hidden">
-                <Link to="/today" className="min-w-0">
+                <Link
+                  to="/today"
+                  search={mode === "demo" ? { mode: "demo" } : {}}
+                  className="min-w-0"
+                >
                   <RumoLogo />
                 </Link>
               </header>

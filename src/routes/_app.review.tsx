@@ -80,8 +80,8 @@ function ReviewPage() {
     return (
       <EmptyState
         icon={<CalendarCheck className="size-5" />}
-        title="Sua revisão será construída com o uso"
-        description="Registre tarefas e hábitos ao longo da semana. A revisão reunirá o que foi planejado, realizado e ajustado."
+        title="Revisão semanal ainda não integrada"
+        description="A revisão ainda não reúne os dados reais da sua conta. Você pode consultar suas tarefas; hábitos permanecem uma demonstração local."
         action={
           <div className="flex flex-col justify-center gap-2 sm:flex-row">
             <Button asChild>

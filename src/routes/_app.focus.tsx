@@ -19,7 +19,10 @@ import {
 } from "@/components/ui/select";
 import { useDemoQuery } from "@/hooks/use-demo-query";
 import { useAppDataMode } from "@/hooks/use-app-data-mode";
-import { focusSessions, tasks } from "@/lib/demo-data";
+import { focusSessions, tasks as demoTasks } from "@/lib/demo-data";
+import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
+import { useTaskData } from "@/hooks/use-task-data";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_app/focus")({
   head: () => ({
@@ -41,14 +44,83 @@ export const Route = createFileRoute("/_app/focus")({
 });
 
 const durations = [25, 50, 90];
-type LocalFocusSession = (typeof focusSessions)[number] & {
+type LocalFocusSession = Omit<(typeof focusSessions)[number], "category"> & {
+  category: string;
   status: "Concluída" | "Encerrada";
 };
 
 function FocusPage() {
   const mode = useAppDataMode();
-  const { categoryName } = useCategories();
+  const { user } = useAuth();
+  if (mode === "demo") return <DemoFocus />;
+  return user ? (
+    <TaskDataProvider key={user.id} userId={user.id}>
+      <AuthenticatedFocus />
+    </TaskDataProvider>
+  ) : null;
+}
+
+function DemoFocus() {
+  const { categories, categoryName } = useCategories();
   const { data: sessions = [] } = useDemoQuery(["focus", "sessions"], () => focusSessions);
+  return (
+    <FocusTimer
+      tasks={demoTasks}
+      sessions={sessions}
+      categoryName={(id) => {
+        const category = categories.find((item) => item.id === id);
+        return category ? categoryName(category.id) : id;
+      }}
+      demo
+    />
+  );
+}
+
+function AuthenticatedFocus() {
+  const data = useTaskData();
+  const tasks = data.tasks.filter((task) => !task.archived);
+  if (!tasks.length) {
+    return (
+      <EmptyState
+        icon={<Timer className="size-5" />}
+        title="Crie uma tarefa para iniciar um bloco de foco"
+        description="Escolha uma tarefa real, defina a duração e comece quando estiver pronto."
+        action={
+          <Button asChild>
+            <Link to="/tasks">Criar tarefa</Link>
+          </Button>
+        }
+      />
+    );
+  }
+  return (
+    <FocusTimer
+      tasks={tasks.map((task) => ({
+        id: task.id,
+        title: task.title,
+        category: task.category_id ?? "",
+      }))}
+      sessions={[]}
+      categoryName={(id) =>
+        data.categories.find((category) => category.id === id)?.name ?? "Sem categoria"
+      }
+      demo={false}
+    />
+  );
+}
+
+function FocusTimer({
+  tasks,
+  sessions,
+  categoryName,
+  demo,
+}: {
+  tasks: { id: string; title: string; category: string }[];
+  sessions: typeof focusSessions;
+  categoryName: (id: string) => string;
+  demo: boolean;
+}) {
+  const sessionMessage = (action: string) => `${action}${demo ? " nesta demonstração" : ""}.`;
   const [localSessions, setLocalSessions] = useState<LocalFocusSession[]>(() =>
     sessions.map((session) => ({ ...session, status: "Concluída" })),
   );
@@ -95,13 +167,17 @@ function FocusPage() {
               id: `local-${currentSessions.length + 1}`,
               date: "Agora",
               task: selected?.title ?? "Tarefa selecionada",
-              category: selected?.category ?? "rumo",
+              category: selected?.category ?? (demo ? "rumo" : ""),
               plannedMin: duration,
               realMin: duration,
               status: "Concluída",
             },
           ]);
-          setFocusMessage("Sessão encerrada nesta demonstração.");
+          setFocusMessage(
+            demo
+              ? "Sessão encerrada nesta demonstração."
+              : "Sessão encerrada. O histórico é temporário e não foi salvo.",
+          );
           return 0;
         }
         return current - 1;
@@ -109,20 +185,20 @@ function FocusPage() {
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [duration, isRunning, selected?.category, selected?.title]);
+  }, [demo, duration, isRunning, selected?.category, selected?.title]);
 
   const startFocus = () => {
     if (remainingSeconds === 0 || (isCustomDuration && !isCustomDurationValid)) return;
     setIsRunning(true);
     setHasStarted(true);
-    setFocusMessage("Sessão de foco iniciada nesta demonstração.");
+    setFocusMessage(sessionMessage("Sessão de foco iniciada"));
   };
 
   const resetFocus = () => {
     setIsRunning(false);
     setRemainingSeconds(duration * 60);
     setHasStarted(true);
-    setFocusMessage("Sessão reiniciada nesta demonstração.");
+    setFocusMessage(sessionMessage("Sessão reiniciada"));
   };
 
   const endFocus = () => {
@@ -134,36 +210,30 @@ function FocusPage() {
         id: `local-${currentSessions.length + 1}`,
         date: "Agora",
         task: selected?.title ?? "Tarefa selecionada",
-        category: selected?.category ?? "rumo",
+        category: selected?.category ?? (demo ? "rumo" : ""),
         plannedMin: duration,
         realMin: Math.max(1, Math.floor((duration * 60 - remainingSeconds) / 60)),
         status: "Encerrada",
       },
     ]);
-    setFocusMessage("Sessão encerrada nesta demonstração. Nada foi salvo.");
-  };
-
-  if (mode === "authenticated") {
-    return (
-      <EmptyState
-        icon={<Timer className="size-5" />}
-        title="Crie uma tarefa para iniciar um bloco de foco"
-        description="Escolha uma tarefa real, defina a duração e comece quando estiver pronto."
-        action={
-          <Button asChild>
-            <Link to="/tasks">Criar tarefa</Link>
-          </Button>
-        }
-      />
+    setFocusMessage(
+      demo
+        ? "Sessão encerrada nesta demonstração. Nada foi salvo."
+        : "Sessão encerrada. O histórico é temporário e não foi salvo.",
     );
-  }
+  };
 
   return (
     <div className="space-y-8">
       <PageHeader
+        showDemoBadge={demo}
         eyebrow="Uma coisa por vez"
         title="Foco"
-        description="O temporizador é apenas visual nesta etapa. A ideia é escolher uma tarefa, definir a duração e proteger o bloco."
+        description={
+          demo
+            ? "O temporizador é apenas visual nesta etapa. A ideia é escolher uma tarefa, definir a duração e proteger o bloco."
+            : "Escolha uma tarefa real e proteja seu bloco de foco. O timer e o histórico são temporários: não são salvos ao sair ou recarregar."
+        }
       />
 
       <DemoNotice />
@@ -203,7 +273,7 @@ function FocusPage() {
                 aria-label="Pausar sessão de foco"
                 onClick={() => {
                   setIsRunning(false);
-                  setFocusMessage("Sessão pausada nesta demonstração.");
+                  setFocusMessage(sessionMessage("Sessão pausada"));
                 }}
               >
                 <Pause className="size-4" aria-hidden />
@@ -225,7 +295,9 @@ function FocusPage() {
               </p>
             ) : (
               <p className="mt-4 text-xs text-muted-foreground">
-                O estado desta sessão existe somente nesta demonstração.
+                {demo
+                  ? "O estado desta sessão existe somente nesta demonstração."
+                  : "Esta sessão é temporária e não será salva ao sair ou recarregar."}
               </p>
             )}
             <Button
@@ -273,7 +345,7 @@ function FocusPage() {
                       setIsCustomDuration(false);
                       setDuration(d);
                       if (!isRunning) setRemainingSeconds(d * 60);
-                      setFocusMessage("Duração atualizada nesta demonstração.");
+                      setFocusMessage(sessionMessage("Duração atualizada"));
                     }}
                     className="min-w-0 flex-1"
                   >
@@ -289,7 +361,7 @@ function FocusPage() {
                     setIsCustomDuration(true);
                     setCustomMinutes(String(duration));
                     if (isCustomDurationValid) setRemainingSeconds(duration * 60);
-                    setFocusMessage("Duração personalizada selecionada nesta demonstração.");
+                    setFocusMessage(sessionMessage("Duração personalizada selecionada"));
                   }}
                   className="min-w-0 flex-1"
                 >
@@ -339,7 +411,11 @@ function FocusPage() {
 
         <SectionCard
           title="Histórico de sessões"
-          description="Últimas sessões registradas nesta demonstração."
+          description={
+            demo
+              ? "Últimas sessões registradas nesta demonstração."
+              : "Sessões temporárias desta visita. Não são salvas na sua conta."
+          }
         >
           {localSessions.length === 0 ? (
             <EmptyState

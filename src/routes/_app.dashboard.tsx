@@ -23,7 +23,9 @@ import { StatCard } from "@/components/common/StatCard";
 import { useDemoQuery } from "@/hooks/use-demo-query";
 import { dashboardData } from "@/lib/demo-data";
 import { formatDurationHours } from "@/lib/format-duration";
-import { useHabits } from "@/hooks/use-habits";
+import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
+import { useTaskData } from "@/hooks/use-task-data";
+import { useAuth } from "@/hooks/use-auth";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
@@ -59,39 +61,14 @@ const tooltipStyle = {
 function DashboardPage() {
   const mode = useAppDataMode();
   const { data } = useDemoQuery(["dashboard"], () => dashboardData);
-  const { activeHabits } = useHabits();
+  const { user } = useAuth();
 
   if (mode === "authenticated") {
-    return (
-      <div className="space-y-8">
-        <PageHeader
-          showDemoBadge={false}
-          title="Dashboard"
-          description="Acompanhe seus primeiros sinais de ritmo conforme usar o RUMO."
-        />
-        <SectionCard
-          title="Seu ponto de partida"
-          description="Os indicadores começam em zero e ganham contexto com tarefas, foco e hábitos registrados."
-        >
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              ["Tarefas concluídas", "0"],
-              ["Projetos ativos", "0"],
-              ["Tempo de foco", "0"],
-              ["Hábitos acompanhados", String(activeHabits.length)],
-            ].map(([label, value]) => (
-              <div key={label} className="rounded-lg border border-border/70 p-4">
-                <p className="text-xs text-muted-foreground">{label}</p>
-                <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
-              </div>
-            ))}
-          </div>
-          <Button asChild className="mt-5">
-            <Link to="/tasks">Criar primeira tarefa</Link>
-          </Button>
-        </SectionCard>
-      </div>
-    );
+    return user ? (
+      <TaskDataProvider key={user.id} userId={user.id}>
+        <AuthenticatedDashboard />
+      </TaskDataProvider>
+    ) : null;
   }
 
   const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : 0);
@@ -305,6 +282,45 @@ function DashboardPage() {
           </div>
         </SectionCard>
       </div>
+    </div>
+  );
+}
+
+function AuthenticatedDashboard() {
+  const data = useTaskData();
+  return (
+    <div className="space-y-8">
+      <PageHeader
+        showDemoBadge={false}
+        title="Dashboard"
+        description="Resumo dos seus dados atuais."
+      />
+      <SectionCard
+        title="Tarefas e projetos"
+        description="Contagens da sua conta. Foco e hábitos ainda não têm histórico persistente integrado."
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            [
+              "Tarefas concluídas",
+              String(
+                data.tasks.filter((task) => task.status === "Concluída" && !task.archived).length,
+              ),
+            ],
+            ["Projetos ativos", String(data.projects.filter((project) => project.active).length)],
+            ["Tempo de foco", "Não disponível"],
+            ["Hábitos acompanhados", "Não disponível"],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-lg border border-border/70 p-4">
+              <p className="text-xs text-muted-foreground">{label}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
+            </div>
+          ))}
+        </div>
+        <Button asChild className="mt-5">
+          <Link to="/tasks">Ver tarefas</Link>
+        </Button>
+      </SectionCard>
     </div>
   );
 }

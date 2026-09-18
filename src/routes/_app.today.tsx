@@ -235,7 +235,9 @@ function TodayPage() {
               <p className="mt-1 text-xs text-muted-foreground">RUMO · 50 minutos planejados</p>
             </div>
             <Button asChild variant="outline" className="mt-4 w-full">
-              <Link to="/focus">Abrir tela de foco</Link>
+              <Link to="/focus" search={mode === "demo" ? { mode: "demo" } : {}}>
+                Abrir tela de foco
+              </Link>
             </Button>
           </SectionCard>
 

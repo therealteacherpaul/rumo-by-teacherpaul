@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAppDataMode } from "@/hooks/use-app-data-mode";
 import { useHabits } from "@/hooks/use-habits";
 import {
   habitOccursOnDate,
@@ -46,6 +47,7 @@ function targetValue(target: HabitTarget | undefined) {
 }
 
 export function HabitTodaySummary() {
+  const mode = useAppDataMode();
   const { activeHabits, checkIns, getHabitProgress, getHabitStatus, recordCheckIn, clearCheckIn } =
     useHabits();
   const [message, setMessage] = useState("");
@@ -78,7 +80,7 @@ export function HabitTodaySummary() {
       description="Pequenos passos também contam."
       action={
         <Button asChild variant="outline" size="sm" aria-label="Abrir todos os hábitos">
-          <Link to="/habits">
+          <Link to="/habits" search={mode === "demo" ? { mode: "demo" } : {}}>
             Ver hábitos
             <ExternalLink className="ml-2 size-3.5" aria-hidden />
           </Link>
@@ -121,9 +123,7 @@ export function HabitTodaySummary() {
               progress={getHabitProgress(habit, DEMO_DATE)}
               hasCheckIn={hasCheckIn}
               onComplete={() => updateCheckIn(habit, "principal")}
-              {...(habit.minimumTarget
-                ? { onLight: () => updateCheckIn(habit, "leve") }
-                : {})}
+              {...(habit.minimumTarget ? { onLight: () => updateCheckIn(habit, "leve") } : {})}
               onClear={() => {
                 clearCheckIn(habit.id, DEMO_DATE);
                 setMessage(`Registro de “${habit.name}” removido desta demonstração.`);
