@@ -96,7 +96,10 @@ export const generateDayPlan = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => inputSchema.parse(data))
   .handler(async ({ data }) => {
     const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) throw new Error("planner_unavailable");
+    if (!apiKey) {
+      console.error("[planner] missing LOVABLE_API_KEY");
+      throw new Error("planner_unavailable");
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
       method: "POST",
@@ -125,6 +128,7 @@ export const generateDayPlan = createServerFn({ method: "POST" })
 
     if (!response.ok || !response.body) {
       const status = response.status;
+      console.error("[planner] gateway status", status, (await response.text()).slice(0, 500));
       if (status === 429) throw new Error("planner_rate_limited");
       if (status === 402 || status === 403) throw new Error("planner_credits");
       throw new Error("planner_unavailable");
