@@ -10,6 +10,8 @@ import { useTaskData } from "@/hooks/use-task-data";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
+import { AuthenticatedDayPlanner } from "@/components/planning/AuthenticatedDayPlanner";
+
 type Priority = Tables<"priorities">;
 export function AuthenticatedPriorities() {
   const { user } = useAuth();
@@ -21,6 +23,7 @@ export function AuthenticatedPriorities() {
   const [editing, setEditing] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [loadFailed, setLoadFailed] = useState(false);
   const [message, setMessage] = useState("");
   const load = useCallback(async () => {
     if (!user) return;
@@ -32,6 +35,7 @@ export function AuthenticatedPriorities() {
       .eq("user_id", user.id)
       .eq("date", date)
       .order("slot");
+    setLoadFailed(Boolean(queryError));
     if (queryError) setError("Não foi possível carregar suas prioridades. Tente novamente.");
     else setItems(data ?? []);
     setLoading(false);
@@ -89,7 +93,7 @@ export function AuthenticatedPriorities() {
         <p className="text-sm text-muted-foreground">Carregando suas prioridades…</p>
       </SectionCard>
     );
-  return (
+  const prioritiesSection = (
     <SectionCard
       title="Três prioridades do dia"
       description="Se só isso acontecer, o dia já valeu."
@@ -193,5 +197,11 @@ export function AuthenticatedPriorities() {
         Criar tarefa
       </Link>
     </SectionCard>
+  );
+  return (
+    <>
+      {prioritiesSection}
+      <AuthenticatedDayPlanner priorities={items} date={date} unavailable={loadFailed} />
+    </>
   );
 }

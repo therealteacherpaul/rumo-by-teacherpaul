@@ -81,7 +81,7 @@ function ReviewPage() {
       <EmptyState
         icon={<CalendarCheck className="size-5" />}
         title="Revisão semanal ainda não integrada"
-        description="A revisão ainda não reúne os dados reais da sua conta. Você pode consultar suas tarefas; hábitos permanecem uma demonstração local."
+        description="A revisão ainda não reúne os dados reais da sua conta. Você pode consultar suas tarefas; hábitos são editáveis nesta sessão e ainda não são salvos na conta."
         action={
           <div className="flex flex-col justify-center gap-2 sm:flex-row">
             <Button asChild>

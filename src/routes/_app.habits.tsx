@@ -140,17 +140,10 @@ function HabitsPage() {
       startDate: DEMO_DATE,
     };
     const result = editingId
-      ? updateHabit(
-          editingId,
-          minimumTarget ? { ...updatePayload, minimumTarget } : updatePayload,
-        )
-      : createHabit(
-          minimumTarget ? { ...createPayload, minimumTarget } : createPayload,
-        );
+      ? updateHabit(editingId, minimumTarget ? { ...updatePayload, minimumTarget } : updatePayload)
+      : createHabit(minimumTarget ? { ...createPayload, minimumTarget } : createPayload);
     setMessage(
-      result.valid
-        ? `Hábito ${editingId ? "atualizado" : "criado"} nesta demonstração.`
-        : result.reason,
+      result.valid ? `Hábito ${editingId ? "atualizado" : "criado"} nesta sessão.` : result.reason,
     );
     if (result.valid) {
       if (editingId) {
@@ -202,12 +195,13 @@ function HabitsPage() {
       completed: numericValue >= habit.target.target,
       mode,
     });
-    setMessage(`Progresso de “${habit.name}” atualizado nesta demonstração.`);
+    setMessage(`Progresso de “${habit.name}” atualizado nesta sessão.`);
   };
 
   return (
     <div className="space-y-8">
       <PageHeader
+        showDemoBadge={false}
         eyebrow="Consistência flexível"
         title="Hábitos"
         description="Pequenas práticas que cabem na vida real, com uma meta principal e espaço para um modo leve."
@@ -224,7 +218,7 @@ function HabitsPage() {
       <SectionCard
         title="Seus hábitos"
         description="Registre o que aconteceu hoje. Um dia não registrado não é uma falha."
-        action={<Badge variant="outline">Demonstração local</Badge>}
+        action={<Badge variant="outline">Hábitos desta sessão</Badge>}
       >
         <div className="flex flex-wrap gap-2" aria-label="Filtrar hábitos">
           {(
@@ -266,7 +260,7 @@ function HabitsPage() {
                 }}
                 onToggle={() => {
                   const result = deactivateHabit(habit.id);
-                  setMessage(result.valid ? "Hábito desativado nesta demonstração." : result.reason);
+                  setMessage(result.valid ? "Hábito desativado nesta sessão." : result.reason);
                 }}
                 onValue={(value) => setHabitValue(habit, value)}
                 onClear={() => {
@@ -280,7 +274,7 @@ function HabitsPage() {
             <EmptyState
               icon={<Waves />}
               title="Nenhum hábito neste filtro"
-              description="Escolha outro filtro para continuar acompanhando sua demonstração."
+              description="Escolha outro filtro para continuar acompanhando seus hábitos."
             />
           )}
         </div>
@@ -288,7 +282,7 @@ function HabitsPage() {
 
       <SectionCard
         title="Novo hábito personalizado"
-        description="As alterações ficam apenas nesta sessão de demonstração."
+        description="As alterações ficam apenas nesta sessão local e não são salvas na conta."
       >
         <HabitForm
           form={form}
@@ -326,7 +320,7 @@ function HabitsPage() {
             <DialogDescription>
               Atualize os dados de{" "}
               {editingId ? habits.find((habit) => habit.id === editingId)?.name : "seu hábito"}. As
-              alterações ficam nesta demonstração.
+              alterações ficam nesta sessão.
             </DialogDescription>
           </DialogHeader>
           <HabitForm
@@ -368,9 +362,7 @@ function HabitsPage() {
                   size="sm"
                   onClick={() => {
                     const result = activateHabit(habit.id);
-                    setMessage(
-                      result.valid ? "Hábito reativado nesta demonstração." : result.reason,
-                    );
+                    setMessage(result.valid ? "Hábito reativado nesta sessão." : result.reason);
                   }}
                   aria-label={`Reativar ${habit.name}`}
                 >

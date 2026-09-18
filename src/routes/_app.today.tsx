@@ -4,6 +4,7 @@ import { Battery, CalendarClock, CheckCircle2, Circle, Target, Timer } from "luc
 import { useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
+import { DemoDayPlanner } from "@/components/planning/DemoDayPlanner";
 import { AuthenticatedPriorities } from "@/components/today/AuthenticatedPriorities";
 import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
 import { HabitTodaySummary } from "@/components/habits/HabitTodaySummary";
@@ -96,6 +97,7 @@ function TodayPage() {
       />
 
       <DemoNotice />
+      <DemoDayPlanner completedIds={completedPriorityIds} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
