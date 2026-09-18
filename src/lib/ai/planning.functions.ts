@@ -93,7 +93,7 @@ function buildPrompt(data: z.infer<typeof inputSchema>) {
 
 export const generateDayPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => inputSchema.parse(data))
+  .validator((data: unknown) => inputSchema.parse(data))
   .handler(async ({ data }) => {
     const apiKey = process.env["LOVABLE_API_KEY"];
     if (!apiKey) {
@@ -128,7 +128,7 @@ export const generateDayPlan = createServerFn({ method: "POST" })
 
     if (!response.ok || !response.body) {
       const status = response.status;
-      console.error("[planner] gateway status", status, (await response.text()).slice(0, 500));
+      console.error("[planner] gateway status", status);
       if (status === 429) throw new Error("planner_rate_limited");
       if (status === 402 || status === 403) throw new Error("planner_credits");
       throw new Error("planner_unavailable");
