@@ -53,6 +53,62 @@ export type Database = {
         }
         Relationships: []
       }
+      habit_check_ins: {
+        Row: {
+          created_at: string
+          date: string
+          habit_id: string
+          mode: string
+          updated_at: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          habit_id: string
+          mode: string
+          updated_at?: string
+          user_id?: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          habit_id?: string
+          mode?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_check_ins_user_id_habit_id_fkey"
+            columns: ["user_id", "habit_id"]
+            isOneToOne: false
+            referencedRelation: "user_habits"
+            referencedColumns: ["user_id", "id"]
+          },
+        ]
+      }
+      habit_initializations: {
+        Row: {
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       priorities: {
         Row: {
           category_id: string | null
@@ -205,12 +261,63 @@ export type Database = {
           },
         ]
       }
+      user_habits: {
+        Row: {
+          active: boolean
+          created_at: string
+          frequency_interval: number | null
+          frequency_type: string
+          id: string
+          minimum_value: number | null
+          name: string
+          source: string
+          start_date: string
+          target_type: string
+          target_unit: string | null
+          target_value: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          frequency_interval?: number | null
+          frequency_type: string
+          id?: string
+          minimum_value?: number | null
+          name: string
+          source?: string
+          start_date?: string
+          target_type: string
+          target_unit?: string | null
+          target_value: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          frequency_interval?: number | null
+          frequency_type?: string
+          id?: string
+          minimum_value?: number | null
+          name?: string
+          source?: string
+          start_date?: string
+          target_type?: string
+          target_unit?: string | null
+          target_value?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      initialize_user_habits: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
