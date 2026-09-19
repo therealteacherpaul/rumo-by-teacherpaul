@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { DataSelect } from "./DataSelect";
 
 export function AuthenticatedTasks() {
   const data = useTaskData();
+  const editorTrigger = useRef<HTMLButtonElement | null>(null);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [project, setProject] = useState("");
@@ -45,7 +46,13 @@ export function AuthenticatedTasks() {
         description="Organize o que precisa fazer e acompanhe seus projetos."
         actions={
           <>
-            <Button disabled={data.pending} onClick={() => setEditor("new")}>
+            <Button
+              disabled={data.pending}
+              onClick={(event) => {
+                editorTrigger.current = event.currentTarget;
+                setEditor("new");
+              }}
+            >
               Nova tarefa
             </Button>
             <Button
@@ -113,7 +120,14 @@ export function AuthenticatedTasks() {
             <p className="mt-2 text-sm text-muted-foreground">
               Comece com uma ação pequena. Escolha uma categoria e crie sua primeira tarefa.
             </p>
-            <Button className="mt-4" disabled={data.pending} onClick={() => setEditor("new")}>
+            <Button
+              className="mt-4"
+              disabled={data.pending}
+              onClick={(event) => {
+                editorTrigger.current = event.currentTarget;
+                setEditor("new");
+              }}
+            >
               Nova tarefa
             </Button>
           </div>
@@ -175,7 +189,10 @@ export function AuthenticatedTasks() {
                   <Button
                     disabled={data.pending}
                     variant="ghost"
-                    onClick={() => setEditor(task)}
+                    onClick={(event) => {
+                      editorTrigger.current = event.currentTarget;
+                      setEditor(task);
+                    }}
                     aria-label={`Editar tarefa: ${task.title}`}
                   >
                     Editar
@@ -222,7 +239,15 @@ export function AuthenticatedTasks() {
           if (!open && !data.saving) setEditor(null);
         }}
       >
-        <DialogContent className="max-h-[90dvh] overflow-y-auto">
+        <DialogContent
+          className="max-h-[90dvh] overflow-y-auto"
+          onCloseAutoFocus={(event) => {
+            if (editorTrigger.current?.isConnected) {
+              event.preventDefault();
+              editorTrigger.current.focus();
+            }
+          }}
+        >
           <DialogHeader>
             <DialogTitle>{editor === "new" ? "Nova tarefa" : "Editar tarefa"}</DialogTitle>
             <DialogDescription>
@@ -308,7 +333,7 @@ function TaskEditor({ task, onSaved }: { task: UserTask | null; onSaved: () => v
       </DataSelect>
       <button
         type="button"
-        className="text-left text-xs text-gold underline underline-offset-4"
+        className="min-h-11 min-w-11 text-left text-xs text-gold underline underline-offset-4 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         onClick={() => setQuickCategory((open) => !open)}
       >
         + Criar categoria

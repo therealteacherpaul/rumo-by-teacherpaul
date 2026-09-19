@@ -8,6 +8,88 @@ export type Database = {
   };
   public: {
     Tables: {
+      user_habits: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          source: string;
+          active: boolean;
+          frequency_type: string;
+          frequency_interval: number | null;
+          target_type: string;
+          target_value: number;
+          target_unit: string | null;
+          minimum_value: number | null;
+          start_date: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          name: string;
+          source?: string;
+          active?: boolean;
+          frequency_type: string;
+          frequency_interval?: number | null;
+          target_type: string;
+          target_value: number;
+          target_unit?: string | null;
+          minimum_value?: number | null;
+          start_date?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          source?: string;
+          active?: boolean;
+          frequency_type?: string;
+          frequency_interval?: number | null;
+          target_type?: string;
+          target_value?: number;
+          target_unit?: string | null;
+          minimum_value?: number | null;
+          start_date?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      habit_check_ins: {
+        Row: {
+          user_id: string;
+          habit_id: string;
+          date: string;
+          value: number;
+          mode: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id?: string;
+          habit_id: string;
+          date: string;
+          value: number;
+          mode: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          habit_id?: string;
+          date?: string;
+          value?: number;
+          mode?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
       categories: {
         Row: {
           active: boolean;
@@ -204,7 +286,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      initialize_user_habits: { Args: Record<PropertyKey, never>; Returns: undefined };
     };
     Enums: {
       [_ in never]: never;

@@ -1,3 +1,5 @@
+import { useAppDataMode } from "@/hooks/use-app-data-mode";
+import { habitOccursOnDate } from "@/lib/habit-data";
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, Edit3, ToggleLeft, ToggleRight, Waves, X } from "lucide-react";
 import { useRef, useState } from "react";
@@ -81,7 +83,15 @@ function buildFrequency(type: FrequencyType, interval: string): HabitFrequency {
 }
 
 function HabitsPage() {
+  const mode = useAppDataMode();
+  const date = mode === "demo" ? DEMO_DATE : new Date().toLocaleDateString("en-CA");
+  const [deleting, setDeleting] = useState<Habit | null>(null);
   const {
+    loading,
+    pending,
+    error,
+    reload,
+    deleteHabit,
     habits,
     checkIns,
     activeHabits,
@@ -102,23 +112,19 @@ function HabitsPage() {
   const editButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const lastEditingId = useRef<string | null>(null);
 
-  const todayHabits = activeHabits.filter((habit) => habitOccursToday(habit));
-  const completed = todayHabits.filter(
-    (habit) => getHabitStatus(habit, DEMO_DATE) === "feito",
-  ).length;
-  const light = todayHabits.filter(
-    (habit) => getHabitStatus(habit, DEMO_DATE) === "modo_leve",
-  ).length;
+  const todayHabits = activeHabits.filter((habit) => habitOccursOnDate(habit, date));
+  const completed = todayHabits.filter((habit) => getHabitStatus(habit, date) === "feito").length;
+  const light = todayHabits.filter((habit) => getHabitStatus(habit, date) === "modo_leve").length;
   const unregistered = todayHabits.filter(
-    (habit) => getHabitStatus(habit, DEMO_DATE) === "nao_registrado",
+    (habit) => getHabitStatus(habit, date) === "nao_registrado",
   ).length;
   const visibleHabits = todayHabits.filter((habit) => {
-    const status = getHabitStatus(habit, DEMO_DATE);
+    const status = getHabitStatus(habit, date);
     return filter === "todos" || (filter === "feitos" ? status === "feito" : status !== "feito");
   });
-  const inactiveHabits = habits.filter((habit) => !habit.active);
+  const otherHabits = habits.filter((habit) => !habit.active || !habitOccursOnDate(habit, date));
 
-  const saveHabit = () => {
+  const saveHabit = async () => {
     const target = buildTarget(form.targetType, form.target, form.unit);
     const minimumTarget = form.minimumTarget.trim()
       ? buildTarget(form.targetType, form.minimumTarget, form.unit)
@@ -137,18 +143,24 @@ function HabitsPage() {
       active: true,
       frequency,
       target,
-      startDate: DEMO_DATE,
+      startDate: date,
     };
     const result = editingId
-      ? updateHabit(editingId, minimumTarget ? { ...updatePayload, minimumTarget } : updatePayload)
-      : createHabit(minimumTarget ? { ...createPayload, minimumTarget } : createPayload);
+      ? await updateHabit(
+          editingId,
+          minimumTarget ? { ...updatePayload, minimumTarget } : updatePayload,
+        )
+      : await createHabit(minimumTarget ? { ...createPayload, minimumTarget } : createPayload);
     setMessage(
-      result.valid ? `Hábito ${editingId ? "atualizado" : "criado"} nesta sessão.` : result.reason,
+      result.valid
+        ? `Hábito ${editingId ? "atualizado" : "criado"} ${mode === "demo" ? "nesta sessão" : "na sua conta"}.`
+        : result.reason,
     );
     if (result.valid) {
       if (editingId) {
         setEditingId(null);
         setEditDialogOpen(false);
+        setForm(emptyForm());
       } else {
         setForm(emptyForm());
       }
@@ -178,7 +190,7 @@ function HabitsPage() {
     setMessage("");
   };
 
-  const setHabitValue = (habit: Habit, value: string) => {
+  const setHabitValue = async (habit: Habit, value: string) => {
     const numericValue = Number(value);
     if (!Number.isFinite(numericValue) || numericValue < 0) return;
     const minimum = habit.minimumTarget?.target ?? 0;
@@ -188,192 +200,306 @@ function HabitsPage() {
         : numericValue >= minimum && minimum > 0
           ? "leve"
           : "principal";
-    recordCheckIn({
+    const result = await recordCheckIn({
       habitId: habit.id,
-      date: DEMO_DATE,
+      date: date,
       value: numericValue,
       completed: numericValue >= habit.target.target,
       mode,
     });
-    setMessage(`Progresso de “${habit.name}” atualizado nesta sessão.`);
+    setMessage(result.valid ? `Progresso de “${habit.name}” atualizado.` : result.reason);
   };
 
+  if (loading) return <p role="status">Carregando seus hábitos…</p>;
+  if (error)
+    return (
+      <div role="alert" className="space-y-3">
+        <p>{error}</p>
+        <Button onClick={() => void reload()}>Tentar novamente</Button>
+      </div>
+    );
   return (
     <div className="space-y-8">
-      <PageHeader
-        showDemoBadge={false}
-        eyebrow="Consistência flexível"
-        title="Hábitos"
-        description="Pequenas práticas que cabem na vida real, com uma meta principal e espaço para um modo leve."
-      />
-      <DemoNotice />
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Summary label="Ativos" value={String(activeHabits.length)} hint="de 12 possíveis" />
-        <Summary label="Feitos hoje" value={String(completed)} hint="meta principal" />
-        <Summary label="Modo leve" value={String(light)} hint="também conta" />
-        <Summary label="Não registrados" value={String(unregistered)} hint="sem cobrança" />
-      </div>
-
-      <SectionCard
-        title="Seus hábitos"
-        description="Registre o que aconteceu hoje. Um dia não registrado não é uma falha."
-        action={<Badge variant="outline">Hábitos desta sessão</Badge>}
-      >
-        <div className="flex flex-wrap gap-2" aria-label="Filtrar hábitos">
-          {(
-            [
-              ["todos", "Todos"],
-              ["feitos", "Feitos"],
-              ["pendentes", "Pendentes"],
-            ] as const
-          ).map(([value, label]) => (
-            <Button
-              key={value}
-              type="button"
-              size="sm"
-              variant={filter === value ? "default" : "outline"}
-              onClick={() => setFilter(value)}
-              aria-pressed={filter === value}
-            >
-              {label}
-            </Button>
-          ))}
-        </div>
-
-        <div className="mt-5 grid gap-4">
-          {visibleHabits.map((habit) => {
-            const checkIn = checkIns.find(
-              (item) => item.habitId === habit.id && item.date === DEMO_DATE,
-            );
-            return (
-              <HabitCard
-                key={habit.id}
-                habit={habit}
-                date={DEMO_DATE}
-                progress={getHabitProgress(habit, DEMO_DATE)}
-                status={getHabitStatus(habit, DEMO_DATE)}
-                {...(checkIn ? { checkIn } : {})}
-                onEdit={() => startEditing(habit)}
-                editButtonRef={(element) => {
-                  editButtonRefs.current[habit.id] = element;
-                }}
-                onToggle={() => {
-                  const result = deactivateHabit(habit.id);
-                  setMessage(result.valid ? "Hábito desativado nesta sessão." : result.reason);
-                }}
-                onValue={(value) => setHabitValue(habit, value)}
-                onClear={() => {
-                  clearCheckIn(habit.id, DEMO_DATE);
-                  setMessage(`Registro de “${habit.name}” removido desta demonstração.`);
-                }}
-              />
-            );
-          })}
-          {visibleHabits.length === 0 && (
-            <EmptyState
-              icon={<Waves />}
-              title="Nenhum hábito neste filtro"
-              description="Escolha outro filtro para continuar acompanhando seus hábitos."
-            />
-          )}
-        </div>
-      </SectionCard>
-
-      <SectionCard
-        title="Novo hábito personalizado"
-        description="As alterações ficam apenas nesta sessão local e não são salvas na conta."
-      >
-        <HabitForm
-          form={form}
-          setForm={setForm}
-          onSave={saveHabit}
-          editing={Boolean(editingId)}
-          onCancel={() => {
-            setForm(emptyForm());
-            setMessage("");
-          }}
+      {pending && <p role="status">Salvando hábitos…</p>}
+      <fieldset disabled={pending} className="min-w-0 space-y-8">
+        <PageHeader
+          showDemoBadge={false}
+          eyebrow="Consistência flexível"
+          title="Hábitos"
+          description="Pequenas práticas que cabem na vida real, com uma meta principal e espaço para um modo leve."
         />
-        {message && (
-          <p className="mt-4 text-sm text-success" role="status">
-            {message}
-          </p>
-        )}
-      </SectionCard>
+        <DemoNotice />
 
-      <Dialog
-        open={editDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) cancelEditing();
-          else setEditDialogOpen(true);
-        }}
-      >
-        <DialogContent
-          className="max-h-[90vh] overflow-y-auto"
-          onCloseAutoFocus={(event) => {
-            event.preventDefault();
-            if (lastEditingId.current) editButtonRefs.current[lastEditingId.current]?.focus();
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>Editar hábito</DialogTitle>
-            <DialogDescription>
-              Atualize os dados de{" "}
-              {editingId ? habits.find((habit) => habit.id === editingId)?.name : "seu hábito"}. As
-              alterações ficam nesta sessão.
-            </DialogDescription>
-          </DialogHeader>
-          <HabitForm
-            form={form}
-            setForm={setForm}
-            onSave={saveHabit}
-            editing
-            onCancel={cancelEditing}
-            inDialog
-          />
-          {message && (
-            <p className="text-sm text-destructive" role="alert">
-              {message}
-            </p>
-          )}
-        </DialogContent>
-      </Dialog>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Summary label="Ativos" value={String(activeHabits.length)} hint="de 12 possíveis" />
+          <Summary label="Feitos hoje" value={String(completed)} hint="meta principal" />
+          <Summary label="Modo leve" value={String(light)} hint="também conta" />
+          <Summary label="Não registrados" value={String(unregistered)} hint="sem cobrança" />
+        </div>
 
-      {inactiveHabits.length > 0 && (
         <SectionCard
-          title="Hábitos desativados"
-          description="Eles não aparecem nos registros novos, mas continuam preservados."
+          title="Seus hábitos"
+          description="Registre o que aconteceu hoje. Um dia não registrado não é uma falha."
+          action={
+            <Badge variant="outline">
+              {mode === "demo" ? "Hábitos desta sessão" : "Hábitos da sua conta"}
+            </Badge>
+          }
         >
-          <div className="grid gap-3 sm:grid-cols-2">
-            {inactiveHabits.map((habit) => (
-              <div
-                key={habit.id}
-                className="flex min-w-0 items-center justify-between gap-3 rounded-lg border border-border/70 p-4"
+          <div className="flex flex-wrap gap-2" aria-label="Filtrar hábitos">
+            {(
+              [
+                ["todos", "Todos"],
+                ["feitos", "Feitos"],
+                ["pendentes", "Pendentes"],
+              ] as const
+            ).map(([value, label]) => (
+              <Button
+                key={value}
+                type="button"
+                size="sm"
+                variant={filter === value ? "default" : "outline"}
+                onClick={() => setFilter(value)}
+                aria-pressed={filter === value}
               >
-                <div className="min-w-0">
-                  <p className="break-words text-sm font-medium">{habit.name}</p>
-                  <Badge variant="outline" className="mt-2">
-                    Desativado
-                  </Badge>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const result = activateHabit(habit.id);
-                    setMessage(result.valid ? "Hábito reativado nesta sessão." : result.reason);
-                  }}
-                  aria-label={`Reativar ${habit.name}`}
-                >
-                  <ToggleRight className="mr-2 size-4" aria-hidden />
-                  Reativar
-                </Button>
-              </div>
+                {label}
+              </Button>
             ))}
           </div>
+
+          <div className="mt-5 grid gap-4">
+            {visibleHabits.map((habit) => {
+              const checkIn = checkIns.find(
+                (item) => item.habitId === habit.id && item.date === date,
+              );
+              return (
+                <HabitCard
+                  key={`${habit.id}:${checkIn?.value ?? "empty"}:${date}`}
+                  habit={habit}
+                  date={date}
+                  progress={getHabitProgress(habit, date)}
+                  status={getHabitStatus(habit, date)}
+                  {...(checkIn ? { checkIn } : {})}
+                  onEdit={() => startEditing(habit)}
+                  editButtonRef={(element) => {
+                    editButtonRefs.current[habit.id] = element;
+                  }}
+                  onToggle={async () => {
+                    const result = await deactivateHabit(habit.id);
+                    setMessage(result.valid ? "Hábito desativado." : result.reason);
+                  }}
+                  onValue={(value) => setHabitValue(habit, value)}
+                  onClear={async () => {
+                    const result = await clearCheckIn(habit.id, date);
+                    setMessage(
+                      result.valid
+                        ? `Hábito “${habit.name}” reaberto para esta data.`
+                        : result.reason,
+                    );
+                  }}
+                />
+              );
+            })}
+            {visibleHabits.length === 0 && (
+              <EmptyState
+                icon={<Waves />}
+                title="Nenhum hábito neste filtro"
+                description="Escolha outro filtro ou crie um hábito abaixo."
+                action={
+                  <Button onClick={() => document.getElementById("habit-name")?.focus()}>
+                    Criar hábito
+                  </Button>
+                }
+              />
+            )}
+          </div>
         </SectionCard>
-      )}
+
+        <div id="new-habit-form">
+          <SectionCard
+            title="Novo hábito personalizado"
+            description={
+              mode === "demo"
+                ? "As alterações ficam apenas nesta sessão local."
+                : "As alterações são salvas na sua conta."
+            }
+          >
+            <HabitForm
+              form={form}
+              setForm={setForm}
+              onSave={saveHabit}
+              editing={Boolean(editingId)}
+              onCancel={() => {
+                setForm(emptyForm());
+                setMessage("");
+              }}
+            />
+            {message && (
+              <p className="mt-4 text-sm" role="status">
+                {message}
+              </p>
+            )}
+          </SectionCard>
+        </div>
+
+        <Dialog
+          open={editDialogOpen}
+          onOpenChange={(open) => {
+            if (pending) return;
+            if (!open) cancelEditing();
+            else setEditDialogOpen(true);
+          }}
+        >
+          <DialogContent
+            className="max-h-[90vh] overflow-y-auto"
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              if (lastEditingId.current) editButtonRefs.current[lastEditingId.current]?.focus();
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>Editar hábito</DialogTitle>
+              <DialogDescription className="break-words">
+                Atualize os dados de{" "}
+                {editingId ? habits.find((habit) => habit.id === editingId)?.name : "seu hábito"}.
+                As alterações {mode === "demo" ? "ficam nesta sessão" : "são salvas na sua conta"}.
+              </DialogDescription>
+            </DialogHeader>
+            <fieldset disabled={pending} className="min-w-0">
+              <HabitForm
+                form={form}
+                setForm={setForm}
+                onSave={saveHabit}
+                editing
+                onCancel={cancelEditing}
+                inDialog
+              />
+            </fieldset>
+            {message && (
+              <p className="text-sm text-destructive" role="alert">
+                {message}
+              </p>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {mode === "authenticated" && habits.length > 0 && (
+          <SectionCard
+            title="Excluir hábito"
+            description="A exclusão também remove seus registros. Esta ação exige confirmação."
+          >
+            <div className="flex flex-wrap gap-2">
+              {habits.map((habit) => (
+                <Button
+                  key={habit.id}
+                  variant="outline"
+                  className="h-auto min-h-11 whitespace-normal break-words text-left"
+                  onClick={() => {
+                    setMessage("");
+                    setDeleting(habit);
+                  }}
+                >
+                  Excluir {habit.name}
+                </Button>
+              ))}
+            </div>
+          </SectionCard>
+        )}
+        <Dialog
+          open={Boolean(deleting)}
+          onOpenChange={(open) => {
+            if (!open && !pending) setDeleting(null);
+          }}
+        >
+          <DialogContent
+            onEscapeKeyDown={(event) => {
+              if (pending) event.preventDefault();
+            }}
+            onPointerDownOutside={(event) => {
+              if (pending) event.preventDefault();
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>Excluir hábito?</DialogTitle>
+              <DialogDescription className="break-words">
+                Excluir “{deleting?.name}” e seus registros permanentemente?
+              </DialogDescription>
+            </DialogHeader>
+            <Button
+              variant="destructive"
+              disabled={pending}
+              onClick={async () => {
+                if (!deleting) return;
+                const result = await deleteHabit(deleting.id);
+                setMessage(result.valid ? "Hábito excluído." : result.reason);
+                if (result.valid) setDeleting(null);
+              }}
+            >
+              Confirmar exclusão
+            </Button>
+            <Button variant="outline" disabled={pending} onClick={() => setDeleting(null)}>
+              Cancelar
+            </Button>
+            {message && <p role="status">{message}</p>}
+          </DialogContent>
+        </Dialog>
+        {otherHabits.length > 0 && (
+          <SectionCard
+            title="Outros hábitos"
+            description="Hábitos desativados ou previstos para outra data continuam disponíveis para edição."
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              {otherHabits.map((habit) => (
+                <div
+                  key={habit.id}
+                  className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 p-4"
+                >
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-medium">{habit.name}</p>
+                    <Badge variant="outline" className="mt-2">
+                      {habit.active ? "Outra data" : "Desativado"}
+                    </Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => startEditing(habit)}
+                      ref={(element) => {
+                        editButtonRefs.current[habit.id] = element;
+                      }}
+                      aria-label={`Editar ${habit.name}`}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        const result = habit.active
+                          ? await deactivateHabit(habit.id)
+                          : await activateHabit(habit.id);
+                        setMessage(
+                          result.valid
+                            ? habit.active
+                              ? "Hábito desativado."
+                              : "Hábito reativado."
+                            : result.reason,
+                        );
+                      }}
+                      aria-label={`${habit.active ? "Desativar" : "Reativar"} ${habit.name}`}
+                    >
+                      <ToggleRight className="mr-2 size-4" aria-hidden />
+                      {habit.active ? "Desativar" : "Reativar"}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        )}
+      </fieldset>
     </div>
   );
 }
@@ -548,14 +674,15 @@ function HabitForm({
   onCancel: () => void;
   inDialog?: boolean;
 }) {
+  const fieldId = (name: string) => `${inDialog ? "edit-" : ""}habit-${name}`;
   const update = <K extends keyof HabitForm>(key: K, value: HabitForm[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
   return (
     <div className={inDialog ? "grid gap-4" : "grid gap-4 sm:grid-cols-2"}>
       <div className="sm:col-span-2">
-        <Label htmlFor="habit-name">Nome</Label>
+        <Label htmlFor={fieldId("name")}>Nome</Label>
         <Input
-          id="habit-name"
+          id={fieldId("name")}
           value={form.name}
           onChange={(event) => update("name", event.target.value)}
           placeholder="Ex.: Caminhar ao ar livre"
@@ -563,12 +690,12 @@ function HabitForm({
         />
       </div>
       <div>
-        <Label htmlFor="habit-frequency">Frequência</Label>
+        <Label htmlFor={fieldId("frequency")}>Frequência</Label>
         <Select
           value={form.frequencyType}
           onValueChange={(value: FrequencyType) => update("frequencyType", value)}
         >
-          <SelectTrigger id="habit-frequency" className="mt-2">
+          <SelectTrigger id={fieldId("frequency")} className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -580,9 +707,9 @@ function HabitForm({
       </div>
       {form.frequencyType !== "daily" && (
         <div>
-          <Label htmlFor="habit-interval">Intervalo</Label>
+          <Label htmlFor={fieldId("interval")}>Intervalo</Label>
           <Input
-            id="habit-interval"
+            id={fieldId("interval")}
             type="number"
             min="1"
             value={form.interval}
@@ -593,12 +720,12 @@ function HabitForm({
         </div>
       )}
       <div>
-        <Label htmlFor="habit-target-type">Meta principal</Label>
+        <Label htmlFor={fieldId("target-type")}>Meta principal</Label>
         <Select
           value={form.targetType}
           onValueChange={(value: TargetType) => update("targetType", value)}
         >
-          <SelectTrigger id="habit-target-type" className="mt-2">
+          <SelectTrigger id={fieldId("target-type")} className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -609,9 +736,9 @@ function HabitForm({
         </Select>
       </div>
       <div>
-        <Label htmlFor="habit-target">Valor da meta</Label>
+        <Label htmlFor={fieldId("target")}>Valor da meta</Label>
         <Input
-          id="habit-target"
+          id={fieldId("target")}
           type="number"
           min="1"
           value={form.target}
@@ -621,9 +748,9 @@ function HabitForm({
       </div>
       {form.targetType === "quantity" && (
         <div>
-          <Label htmlFor="habit-unit">Unidade</Label>
+          <Label htmlFor={fieldId("unit")}>Unidade</Label>
           <Input
-            id="habit-unit"
+            id={fieldId("unit")}
             value={form.unit}
             onChange={(event) => update("unit", event.target.value)}
             className="mt-2"
@@ -632,9 +759,9 @@ function HabitForm({
         </div>
       )}
       <div>
-        <Label htmlFor="habit-minimum">Meta mínima (opcional)</Label>
+        <Label htmlFor={fieldId("minimum")}>Meta mínima (opcional)</Label>
         <Input
-          id="habit-minimum"
+          id={fieldId("minimum")}
           type="number"
           min="1"
           value={form.minimumTarget}
@@ -655,8 +782,4 @@ function HabitForm({
       </div>
     </div>
   );
-}
-
-function habitOccursToday(habit: Habit) {
-  return habit.startDate <= DEMO_DATE;
 }

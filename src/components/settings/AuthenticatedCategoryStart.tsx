@@ -1,3 +1,4 @@
+import { pluralize } from "@/lib/pluralize";
 import { useCallback, useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -140,7 +141,8 @@ export function AuthenticatedCategoryStart() {
       ) : (
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            {categories.filter((category) => category.active).length}/{categories.length} categorias
+            {categories.filter((category) => category.active).length}/{categories.length}{" "}
+            {pluralize(categories.length, "categoria", "categorias")}
             ativas · limite de 4 personalizadas.
           </p>
           <div className="flex flex-wrap gap-2">

@@ -1,3 +1,4 @@
+import { pluralize } from "@/lib/pluralize";
 import { AuthenticatedTasks } from "@/components/tasks/AuthenticatedTasks";
 import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
 import { useAuth } from "@/hooks/use-auth";
@@ -117,7 +118,7 @@ function DemoTasksPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow={`${projects.length} projetos ativos`}
+        eyebrow={`${projects.length} ${pluralize(projects.length, "projeto ativo", "projetos ativos")}`}
         title="Tarefas"
         description="Cada tarefa tem duração estimada, porque planejar sem tempo é apenas uma lista de desejos."
       />
@@ -295,7 +296,8 @@ function DemoTasksPage() {
               <li key={p} className="rounded-lg border border-border/70 p-4">
                 <p className="break-words text-sm font-medium">{p}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {doneCount} de {items.length} tarefas concluídas
+                  {doneCount} de {items.length} {pluralize(items.length, "tarefa", "tarefas")}{" "}
+                  {pluralize(doneCount, "concluída", "concluídas")}
                 </p>
               </li>
             );

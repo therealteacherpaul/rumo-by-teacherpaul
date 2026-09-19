@@ -14,7 +14,8 @@ export function AuthenticatedDayPlanner({
   unavailable: boolean;
 }) {
   const data = useTaskData();
-  const { activeHabits } = useHabits();
+  const { activeHabits, loading: habitsLoading, error: habitsError } = useHabits();
+  const sourcesUnavailable = unavailable || habitsLoading || Boolean(habitsError);
   const input: PlanningInput = {
     date,
     availableMinutes: 180,
@@ -41,10 +42,10 @@ export function AuthenticatedDayPlanner({
   // Any source change discards previous suggestions and aborts in-flight generation.
   return (
     <DayPlanner
-      key={JSON.stringify([input, unavailable])}
+      key={JSON.stringify([input, sourcesUnavailable])}
       input={input}
       mode="authenticated"
-      unavailable={unavailable}
+      unavailable={sourcesUnavailable}
     />
   );
 }

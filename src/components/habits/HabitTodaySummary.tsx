@@ -1,3 +1,4 @@
+import { pluralize } from "@/lib/pluralize";
 import { Check, ExternalLink, Minus, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -48,32 +49,59 @@ function targetValue(target: HabitTarget | undefined) {
 
 export function HabitTodaySummary() {
   const mode = useAppDataMode();
-  const { activeHabits, checkIns, getHabitProgress, getHabitStatus, recordCheckIn, clearCheckIn } =
-    useHabits();
+  const date = mode === "demo" ? DEMO_DATE : new Date().toLocaleDateString("en-CA");
+  const {
+    loading,
+    pending: saving,
+    error,
+    reload,
+    activeHabits,
+    checkIns,
+    getHabitProgress,
+    getHabitStatus,
+    recordCheckIn,
+    clearCheckIn,
+  } = useHabits();
   const [message, setMessage] = useState("");
-  const habits = activeHabits.filter((habit) => habitOccursOnDate(habit, DEMO_DATE));
-  const statuses = habits.map((habit) => getHabitStatus(habit, DEMO_DATE));
+  const habits = activeHabits.filter((habit) => habitOccursOnDate(habit, date));
+  const statuses = habits.map((habit) => getHabitStatus(habit, date));
   const completed = statuses.filter((status) => status === "feito").length;
   const light = statuses.filter((status) => status === "modo_leve").length;
   const pending = habits.length - completed - light;
   const overallProgress = habits.length
     ? Math.round(
-        habits.reduce((total, habit) => total + getHabitProgress(habit, DEMO_DATE), 0) /
-          habits.length,
+        habits.reduce((total, habit) => total + getHabitProgress(habit, date), 0) / habits.length,
       )
     : 0;
 
-  const updateCheckIn = (habit: Habit, mode: "principal" | "leve") => {
-    recordCheckIn({
+  const updateCheckIn = async (habit: Habit, checkInMode: "principal" | "leve") => {
+    const result = await recordCheckIn({
       habitId: habit.id,
-      date: DEMO_DATE,
-      value: targetValue(mode === "principal" ? habit.target : habit.minimumTarget),
-      completed: mode === "principal",
-      mode,
+      date: date,
+      value: targetValue(checkInMode === "principal" ? habit.target : habit.minimumTarget),
+      completed: checkInMode === "principal",
+      mode: checkInMode,
     });
-    setMessage(`“${habit.name}” atualizado nesta demonstração.`);
+    setMessage(
+      result.valid
+        ? `“${habit.name}” atualizado${mode === "demo" ? " nesta demonstração" : " na sua conta"}.`
+        : result.reason,
+    );
   };
 
+  if (loading)
+    return (
+      <SectionCard title="Hábitos">
+        <p role="status">Carregando hábitos…</p>
+      </SectionCard>
+    );
+  if (error)
+    return (
+      <SectionCard title="Hábitos">
+        <p role="alert">{error}</p>
+        <Button onClick={() => void reload()}>Tentar novamente</Button>
+      </SectionCard>
+    );
   return (
     <SectionCard
       title="Hábitos"
@@ -89,7 +117,8 @@ export function HabitTodaySummary() {
     >
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
         <span className="font-medium">
-          {completed + light} de {habits.length} concluídos hoje
+          {completed + light} de {habits.length}{" "}
+          {pluralize(completed + light, "concluído", "concluídos")} hoje
         </span>
         <Badge variant="default">Feitos {completed}</Badge>
         <Badge variant="secondary">Modo leve {light}</Badge>
@@ -109,36 +138,45 @@ export function HabitTodaySummary() {
           style={{ width: `${overallProgress}%` }}
         />
       </div>
-      <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-        {habits.slice(0, MAX_QUICK_HABITS).map((habit) => {
-          const status = getHabitStatus(habit, DEMO_DATE);
-          const hasCheckIn = checkIns.some(
-            (item) => item.habitId === habit.id && item.date === DEMO_DATE,
-          );
-          return (
-            <QuickHabit
-              key={habit.id}
-              habit={habit}
-              status={status}
-              progress={getHabitProgress(habit, DEMO_DATE)}
-              hasCheckIn={hasCheckIn}
-              onComplete={() => updateCheckIn(habit, "principal")}
-              {...(habit.minimumTarget ? { onLight: () => updateCheckIn(habit, "leve") } : {})}
-              onClear={() => {
-                clearCheckIn(habit.id, DEMO_DATE);
-                setMessage(`Registro de “${habit.name}” removido desta demonstração.`);
-              }}
-            />
-          );
-        })}
-      </ul>
+      <fieldset disabled={saving} className="min-w-0">
+        {habits.length === 0 && (
+          <p className="mt-3 text-sm">
+            Nenhum hábito previsto para hoje. Abra seus hábitos para criar ou ativar um.
+          </p>
+        )}
+        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+          {habits.slice(0, MAX_QUICK_HABITS).map((habit) => {
+            const status = getHabitStatus(habit, date);
+            const hasCheckIn = checkIns.some(
+              (item) => item.habitId === habit.id && item.date === date,
+            );
+            return (
+              <QuickHabit
+                key={habit.id}
+                habit={habit}
+                status={status}
+                progress={getHabitProgress(habit, date)}
+                hasCheckIn={hasCheckIn}
+                onComplete={() => updateCheckIn(habit, "principal")}
+                {...(habit.minimumTarget ? { onLight: () => updateCheckIn(habit, "leve") } : {})}
+                onClear={async () => {
+                  const result = await clearCheckIn(habit.id, date);
+                  setMessage(result.valid ? `“${habit.name}” reaberto para hoje.` : result.reason);
+                }}
+              />
+            );
+          })}
+        </ul>
+      </fieldset>
       {habits.length > MAX_QUICK_HABITS && (
         <p className="mt-3 text-xs text-muted-foreground">
-          +{habits.length - MAX_QUICK_HABITS} hábitos · veja a lista completa em Hábitos.
+          +{habits.length - MAX_QUICK_HABITS}{" "}
+          {pluralize(habits.length - MAX_QUICK_HABITS, "hábito", "hábitos")} · veja a lista completa
+          em Hábitos.
         </p>
       )}
       {message && (
-        <p className="mt-3 text-xs text-success" role="status">
+        <p className="mt-3 text-xs" role="status">
           {message}
         </p>
       )}

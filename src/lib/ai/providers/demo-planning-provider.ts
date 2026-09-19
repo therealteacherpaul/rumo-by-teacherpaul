@@ -1,3 +1,4 @@
+import { pluralize } from "../../pluralize.ts";
 import { analyzePlanningInput } from "../planning-analysis.ts";
 import type { PlanningInput, PlanningSuggestion } from "../planning-types.ts";
 
@@ -27,7 +28,7 @@ export function generateDemoPlan(input: PlanningInput): PlanningSuggestion {
   }
   return {
     source: "demo",
-    summary: `Exemplo local: ${suggestedBlocks.length} blocos, ${input.availableMinutes - remaining} min de foco. Revise espaço para hábitos, pausas e prioridades antes de aceitar.`,
+    summary: `Exemplo local: ${suggestedBlocks.length} ${pluralize(suggestedBlocks.length, "bloco", "blocos")}, ${input.availableMinutes - remaining} min de foco. Revise espaço para hábitos, pausas e prioridades antes de aceitar.`,
     suggestedBlocks,
     warnings: analyzePlanningInput(input).warnings,
     proposedChanges: tasks

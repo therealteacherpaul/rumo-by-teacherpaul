@@ -1,3 +1,4 @@
+import { pluralize } from "@/lib/pluralize";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Bar,
@@ -271,7 +272,9 @@ function DashboardPage() {
                     />
                     <span className="break-words">{m.name}</span>
                   </span>
-                  <span className="shrink-0 tabular-nums">{m.value} refeições</span>
+                  <span className="shrink-0 tabular-nums">
+                    {m.value} {pluralize(m.value, "refeição", "refeições")}
+                  </span>
                 </li>
               ))}
               <li className="pt-2 text-xs text-muted-foreground">

@@ -1,3 +1,4 @@
+import { pluralize } from "@/lib/pluralize";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { SectionCard } from "@/components/common/SectionCard";
@@ -200,16 +201,23 @@ export function DayPlanner({
               <div className="mt-5 space-y-3">
                 <h3 className="font-medium">Verificações locais</h3>
                 <p className="text-sm text-muted-foreground">
-                  {input.tasks.length} tarefas abertas · {input.projects.length} projetos ·{" "}
-                  {input.priorities.length} prioridades abertas · {input.habits.length} hábitos
-                  ativos.
+                  {input.tasks.length}{" "}
+                  {pluralize(input.tasks.length, "tarefa aberta", "tarefas abertas")} ·{" "}
+                  {input.projects.length} {pluralize(input.projects.length, "projeto", "projetos")}{" "}
+                  · {input.priorities.length}{" "}
+                  {pluralize(input.priorities.length, "prioridade aberta", "prioridades abertas")} ·{" "}
+                  {input.habits.length}{" "}
+                  {pluralize(input.habits.length, "hábito ativo", "hábitos ativos")}.
                 </p>
                 <p className="text-sm">
                   Tarefas com estimativa: {analysis.taskMinutes} min. Hábitos com meta de tempo:{" "}
-                  {analysis.habitMinutes} min. Sem estimativa: {analysis.unestimated} tarefas.
+                  {analysis.habitMinutes} min. Sem estimativa: {analysis.unestimated}{" "}
+                  {pluralize(analysis.unestimated, "tarefa", "tarefas")}.
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Hábitos refletem suas edições nesta sessão; ainda não são persistidos na conta.
+                  {mode === "demo"
+                    ? "Hábitos refletem suas edições nesta sessão de demonstração."
+                    : "Hábitos ativos são carregados da sua conta."}
                 </p>
                 {analysis.warnings.length ? (
                   <ul className="list-disc space-y-2 pl-5 text-sm">
