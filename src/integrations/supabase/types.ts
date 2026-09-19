@@ -89,6 +89,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      habit_initializations: {
+        Row: {
+          user_id: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
 
       categories: {
         Row: {
@@ -224,7 +242,7 @@ export type Database = {
       tasks: {
         Row: {
           archived: boolean;
-          category_id: string | null;
+          category_id: string;
           created_at: string;
           due_date: string | null;
           estimate_min: number;
@@ -238,7 +256,7 @@ export type Database = {
         };
         Insert: {
           archived?: boolean;
-          category_id: string | null;
+          category_id: string;
           created_at?: string;
           due_date?: string | null;
           estimate_min?: number;
@@ -252,7 +270,7 @@ export type Database = {
         };
         Update: {
           archived?: boolean;
-          category_id?: string | null;
+          category_id?: string;
           created_at?: string;
           due_date?: string | null;
           estimate_min?: number;
@@ -287,6 +305,8 @@ export type Database = {
     };
     Functions: {
       initialize_user_habits: { Args: Record<PropertyKey, never>; Returns: undefined };
+    } & {
+      [_ in never]: never;
     };
     Enums: {
       [_ in never]: never;

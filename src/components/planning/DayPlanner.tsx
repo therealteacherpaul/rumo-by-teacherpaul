@@ -128,7 +128,7 @@ export function DayPlanner({
         <p className="mb-4 text-sm text-muted-foreground">
           {mode === "demo"
             ? "Prévia de demonstração: sugestões calculadas localmente com exemplos, sem chamadas de IA ou gravações."
-            : "A integração de IA está pendente. As verificações abaixo usam regras locais sobre seus dados; não são uma resposta de IA."}
+            : "As sugestões são geradas por IA a partir dos seus dados e nada é alterado automaticamente. As verificações abaixo usam regras locais."}
         </p>
         <p className="mb-4 text-xs text-muted-foreground">
           Aceitar guarda apenas um rascunho nesta visita. Sair, recarregar ou regenerar descarta as
