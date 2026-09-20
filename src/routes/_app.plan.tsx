@@ -1,248 +1,266 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
-import {
-  AlertTriangle,
-  CalendarRange,
-  CheckCircle2,
-  CloudLightning,
-  Gauge,
-  PlayCircle,
-  Timer,
-  TrainFront,
-} from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { CheckCircle2, FolderKanban, ListTodo } from "lucide-react";
+import { useContext, useMemo } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
 import { EmptyState } from "@/components/common/EmptyState";
-import { useAppDataMode } from "@/hooks/use-app-data-mode";
-import { useCategories } from "@/hooks/use-categories";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SectionCard } from "@/components/common/SectionCard";
-import { StatCard } from "@/components/common/StatCard";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { useDemoQuery } from "@/hooks/use-demo-query";
-import { planAlerts, weekBlocks, weekCapacity, weekDays } from "@/lib/demo-data";
-import { formatDurationHours } from "@/lib/format-duration";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
+import { useAppDataMode } from "@/hooks/use-app-data-mode";
+import { useAuth } from "@/hooks/use-auth";
+import { TaskDataContext } from "@/components/tasks/task-data-context";
+import { tasks as demoTasks } from "@/lib/demo-data";
+import { projectProgress, taskBucket } from "@/lib/plan-review";
 
 export const Route = createFileRoute("/_app/plan")({
-  head: () => ({
-    meta: [
-      { title: "Planejamento — RUMO by Teacher Paul" },
-      {
-        name: "description",
-        content:
-          "Visão semanal com compromissos fixos, blocos de foco, capacidade estimada e alertas de sobrecarga.",
-      },
-      { property: "og:title", content: "Planejamento — RUMO by Teacher Paul" },
-      {
-        property: "og:description",
-        content: "Planeje a semana considerando capacidade real, deslocamentos e imprevistos.",
-      },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "Planejamento — RUMO by Teacher Paul" }] }),
   component: PlanPage,
 });
 
-const typeStyles: Record<string, string> = {
-  fixo: "border-l-2 border-primary bg-secondary",
-  foco: "border-l-2 border-gold bg-gold-soft/60",
-  pessoal: "border-l-2 border-muted-foreground/40 bg-muted",
-};
-
-const alertLevelName: Record<string, string> = {
-  conflito: "Conflito",
-  sobrecarga: "Sobrecarga",
-  atencao: "Atenção",
-};
-
-const semanticLegend = [
-  { label: "Planejado", icon: CalendarRange, className: "text-primary" },
-  { label: "Realizado", icon: CheckCircle2, className: "text-success" },
-  { label: "Em andamento", icon: PlayCircle, className: "text-warning" },
-  { label: "Concluído", icon: CheckCircle2, className: "text-success" },
-  { label: "Bloco de foco", icon: Timer, className: "text-gold-foreground" },
-  { label: "Deslocamento", icon: TrainFront, className: "text-muted-foreground" },
-  { label: "Conflito de horário", icon: AlertTriangle, className: "text-destructive" },
-  { label: "Imprevisto", icon: CloudLightning, className: "text-warning" },
-];
+const formatDate = (date: string | null) =>
+  date ? date.split("-").reverse().join("/") : "Sem prazo";
+const today = () => new Date().toISOString().slice(0, 10);
 
 function PlanPage() {
   const mode = useAppDataMode();
-  const { categoryName } = useCategories();
-  const { data: blocks = [] } = useDemoQuery(["plan", "blocks"], () => weekBlocks);
-  const { data: capacity = [] } = useDemoQuery(["plan", "capacity"], () => weekCapacity);
-  const { data: alerts = [] } = useDemoQuery(["plan", "alerts"], () => planAlerts);
-
-  const committed = capacity.reduce((s, d) => s + d.committedH, 0);
-  const total = capacity.reduce((s, d) => s + d.capacityH, 0);
-  const committedProgress = total > 0 ? (committed / total) * 100 : 0;
-  const committedPct = Math.round(committedProgress);
-
-  if (mode === "authenticated") {
+  const { user } = useAuth();
+  if (mode === "authenticated" && user)
     return (
-      <EmptyState
-        icon={<CalendarRange className="size-5" />}
-        title="Planejamento ainda não integrado"
-        description="Suas tarefas e projetos estão disponíveis em Tarefas. A organização semanal com dados reais ainda não está disponível."
-        action={
-          <div className="flex flex-col justify-center gap-2 sm:flex-row">
+      <TaskDataProvider key={user.id} userId={user.id}>
+        <PlanContent />
+      </TaskDataProvider>
+    );
+  return <PlanContent />;
+}
+
+function PlanContent() {
+  const mode = useAppDataMode();
+  const data = useContext(TaskDataContext);
+  const demoProjects = useMemo(
+    () =>
+      [...new Set(demoTasks.map((task) => task.project))].map((name) => ({
+        id: name,
+        name,
+        active: true,
+      })),
+    [],
+  );
+  const tasks =
+    data?.tasks ??
+    demoTasks.map((task) => ({
+      id: task.id,
+      title: task.title,
+      project_id: task.project,
+      priority: task.priority,
+      due_date: task.due,
+      estimate_min: task.estimateMin,
+      status: task.status,
+      archived: false,
+      updated_at: "2026-09-20",
+      category_id: task.category,
+      created_at: "2026-09-01",
+      user_id: "demo",
+    }));
+  const projects = data?.projects ?? demoProjects;
+  const activeTasks = tasks.filter((task) => !task.archived);
+  const groups = projects
+    .map((project) => ({
+      project,
+      tasks: activeTasks.filter((task) => task.project_id === project.id),
+    }))
+    .filter((group) => group.tasks.length);
+  const unassigned = activeTasks.filter((task) => !task.project_id);
+  const buckets = {
+    atrasadas: activeTasks.filter((task) => taskBucket(task, today()) === "atrasadas"),
+    proximas: activeTasks.filter((task) => taskBucket(task, today()) === "proximas"),
+    semPrazo: activeTasks.filter((task) => taskBucket(task, today()) === "semPrazo"),
+  };
+  const search = mode === "demo" ? { mode: "demo" as const } : {};
+  const toggle = data?.setTaskStatus;
+  if (!activeTasks.length)
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          showDemoBadge={false}
+          eyebrow="Organização real"
+          title="Planejamento"
+          description="Uma visão prática das suas tarefas e projetos."
+        />
+        <DemoNotice />
+        <EmptyState
+          icon={<ListTodo className="size-5" />}
+          title="Nenhuma tarefa para planejar"
+          description="Crie sua primeira tarefa ou projeto para começar a organizar o trabalho."
+          action={
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button asChild>
+                <Link to="/tasks" search={search}>
+                  Criar tarefa
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/tasks" search={search}>
+                  Criar projeto
+                </Link>
+              </Button>
+            </div>
+          }
+        />
+      </div>
+    );
+  return (
+    <div className="space-y-8">
+      <PageHeader
+        showDemoBadge={false}
+        eyebrow="Visão prática"
+        title="Planejamento"
+        description="Agrupe tarefas por projeto e veja o que merece atenção primeiro."
+        actions={
+          <div className="flex flex-wrap gap-2">
             <Button asChild>
-              <Link to="/tasks">Criar projeto</Link>
+              <Link to="/today" search={search}>
+                Abrir Planejador do dia
+              </Link>
             </Button>
             <Button asChild variant="outline">
-              <Link to="/tasks">Criar tarefa</Link>
+              <Link to="/tasks" search={search}>
+                Criar tarefa ou projeto
+              </Link>
             </Button>
           </div>
         }
       />
-    );
-  }
-
-  return (
-    <div className="space-y-8">
-      <PageHeader
-        eyebrow="Semana de 31/08 a 06/09"
-        title="Planejamento"
-        description="Um plano que cabe na semana real: compromissos fixos primeiro, foco protegido depois, folga para imprevistos sempre."
-      />
-
       <DemoNotice />
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Capacidade estimada"
-          value={`${total}h`}
-          hint="Horas disponíveis na semana"
-          icon={<Gauge className="size-4" />}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Summary
+          label="Tarefas abertas"
+          value={String(activeTasks.filter((task) => task.status !== "Concluída").length)}
         />
-        <StatCard
-          label="Comprometido"
-          value={`${committed}h`}
-          hint={`${committedPct}% da capacidade`}
-          icon={<CalendarRange className="size-4" />}
-          progress={committedProgress}
-        />
-        <StatCard
-          label="Blocos de foco"
-          value={String(blocks.filter((b) => b.type === "foco").length)}
-          hint="Reservados nesta semana"
-          icon={<Timer className="size-4" />}
-        />
-        <StatCard
-          label="Alertas"
-          value={String(alerts.length)}
-          hint="Conflitos e sobrecarga"
-          icon={<AlertTriangle className="size-4" />}
-        />
+        <Summary label="Atrasadas" value={String(buckets.atrasadas.length)} />
+        <Summary label="Sem prazo" value={String(buckets.semPrazo.length)} />
       </div>
-
       <SectionCard
-        title="Visão semanal"
-        description="Compromissos fixos, blocos de foco e tempo pessoal."
+        title="Prioridade de atenção"
+        description="Comece pelo que está atrasado, depois avance para os próximos prazos."
       >
-        <div className="-mx-2 overflow-x-auto px-2">
-          <div className="grid min-w-[840px] grid-cols-7 gap-3">
-            {weekDays.map((day, index) => (
-              <div key={day} className="min-w-0">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {day}
-                </p>
-                <div className="space-y-2">
-                  {blocks
-                    .filter((b) => b.day === index)
-                    .map((b) => (
-                      <div key={b.id} className={cn("rounded-md p-2.5", typeStyles[b.type])}>
-                        <p className="break-words text-xs font-medium">{b.title}</p>
-                        <p className="mt-1 break-words text-[11px] text-muted-foreground">
-                          {b.start}–{b.end} · {categoryName(b.category)}
-                        </p>
-                      </div>
-                    ))}
-                  {blocks.filter((b) => b.day === index).length === 0 && (
-                    <div className="rounded-md border border-dashed border-border px-2.5 py-4 text-center text-[11px] text-muted-foreground">
-                      Livre
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-2">
-            <span className="h-3 w-1 rounded bg-primary" aria-hidden /> Compromisso fixo
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="h-3 w-1 rounded bg-gold" aria-hidden /> Bloco de foco
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="h-3 w-1 rounded bg-muted-foreground/40" aria-hidden /> Pessoal
-          </span>
-        </div>
-        <div
-          aria-label="Legenda dos estados e tipos de atividade"
-          className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-border pt-4 text-xs text-muted-foreground"
-        >
-          {semanticLegend.map(({ label, icon: Icon, className }) => (
-            <span key={label} className="flex items-center gap-1.5">
-              <Icon className={cn("size-3.5", className)} aria-hidden />
-              {label}
-            </span>
+        <div className="grid gap-3 md:grid-cols-3">
+          {(
+            [
+              ["atrasadas", "Atrasadas", buckets.atrasadas],
+              ["proximas", "Próximas", buckets.proximas],
+              ["semPrazo", "Sem prazo", buckets.semPrazo],
+            ] as const
+          ).map(([key, label, items]) => (
+            <div key={key} className="rounded-lg border border-border/70 p-4">
+              <h2 className="font-medium">
+                {label} <Badge variant="outline">{items.length}</Badge>
+              </h2>
+              <ul className="mt-3 space-y-2">
+                {items.slice(0, 5).map((task) => (
+                  <TaskRow key={task.id} task={task} mode={mode} onToggle={toggle} />
+                ))}
+              </ul>
+            </div>
           ))}
         </div>
       </SectionCard>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <SectionCard
-          title="Capacidade estimada por dia"
-          description="Comprometido versus disponível."
-        >
-          <ul className="space-y-4">
-            {capacity.map((d) => {
-              const pct = d.capacityH > 0 ? Math.round((d.committedH / d.capacityH) * 100) : 0;
-              const over = d.committedH > d.capacityH;
-              return (
-                <li key={d.day}>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{d.day}</span>
-                    <span className={cn("tabular-nums", over && "text-destructive")}>
-                      {formatDurationHours(d.committedH)} / {formatDurationHours(d.capacityH)}
-                    </span>
+      <SectionCard title="Por projeto" description="O progresso considera tarefas não arquivadas.">
+        <div className="grid gap-4 md:grid-cols-2">
+          {groups.map(({ project, tasks: projectTasks }) => {
+            const progress = projectProgress(tasks, project.id);
+            return (
+              <div key={project.id} className="rounded-lg border border-border/70 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <FolderKanban className="size-4 shrink-0 text-gold" aria-hidden />
+                    <h2 className="break-words font-medium">{project.name}</h2>
                   </div>
-                  <Progress value={Math.min(pct, 100)} className="mt-2 h-1.5" />
-                </li>
-              );
-            })}
-          </ul>
-        </SectionCard>
-
-        <SectionCard title="Alertas" description="Sinais para ajustar antes que virem atraso.">
-          <ul className="space-y-3">
-            {alerts.map((a) => (
-              <li
-                key={a.id}
-                className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-border/70 p-3"
-              >
-                <AlertTriangle
-                  className={cn(
-                    "mt-0.5 size-4 shrink-0",
-                    a.level === "conflito" ? "text-destructive" : "text-warning",
-                  )}
-                  aria-hidden
-                />
-                <div className="min-w-0">
-                  <Badge variant="outline" className="mb-1 capitalize">
-                    {alertLevelName[a.level]}
-                  </Badge>
-                  <p className="text-sm">{a.message}</p>
+                  <span className="shrink-0 text-sm tabular-nums">{progress.percent}%</span>
                 </div>
-              </li>
-            ))}
-          </ul>
-        </SectionCard>
-      </div>
+                <Progress value={progress.percent} className="mt-3 h-1.5" />
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {progress.done} de {progress.total} concluídas
+                </p>
+                <ul className="mt-3 space-y-2">
+                  {projectTasks.map((task) => (
+                    <TaskRow key={task.id} task={task} mode={mode} onToggle={toggle} />
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+          {unassigned.length > 0 && (
+            <div className="rounded-lg border border-dashed p-4">
+              <h2 className="font-medium">Sem projeto</h2>
+              <ul className="mt-3 space-y-2">
+                {unassigned.map((task) => (
+                  <TaskRow key={task.id} task={task} mode={mode} onToggle={toggle} />
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </SectionCard>
     </div>
+  );
+}
+
+function Summary({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-border/80 bg-card p-4">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+    </div>
+  );
+}
+function TaskRow({
+  task,
+  mode,
+  onToggle,
+}: {
+  task: {
+    id: string;
+    title: string;
+    priority: string;
+    due_date: string | null;
+    estimate_min: number;
+    status: string;
+  };
+  mode: "demo" | "authenticated";
+  onToggle?: ((id: string, done: boolean) => Promise<unknown>) | undefined;
+}) {
+  const search = mode === "demo" ? { mode: "demo" as const } : {};
+  return (
+    <li className="rounded-md border border-border/60 p-3">
+      <div className="flex min-w-0 items-start justify-between gap-2">
+        <Link
+          to="/tasks"
+          search={search}
+          className={`min-w-0 break-words text-sm font-medium underline-offset-4 hover:underline ${task.status === "Concluída" ? "line-through text-muted-foreground" : ""}`}
+        >
+          {task.title}
+        </Link>
+        {onToggle ? (
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-11 shrink-0"
+            onClick={() => void onToggle(task.id, task.status !== "Concluída")}
+          >
+            {task.status === "Concluída" ? "Reabrir" : "Concluir"}
+          </Button>
+        ) : task.status === "Concluída" ? (
+          <CheckCircle2 className="size-4 shrink-0 text-success" aria-label="Concluída" />
+        ) : null}
+      </div>
+      <p className="mt-1 break-words text-xs text-muted-foreground">
+        {task.priority} · {formatDate(task.due_date)} ·{" "}
+        {task.estimate_min > 0 ? `${task.estimate_min} min` : "Sem estimativa"} · {task.status}
+      </p>
+    </li>
   );
 }
