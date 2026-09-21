@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Pause, Play, RotateCcw, Timer } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
 import { useCategories } from "@/hooks/use-categories";
@@ -23,6 +23,7 @@ import { focusSessions, tasks as demoTasks } from "@/lib/demo-data";
 import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
 import { useTaskData } from "@/hooks/use-task-data";
 import { useAuth } from "@/hooks/use-auth";
+import { loadFocusSessions, saveFocusSession, type FocusSession } from "@/lib/focus-repository";
 
 export const Route = createFileRoute("/_app/focus")({
   head: () => ({
@@ -78,6 +79,25 @@ function DemoFocus() {
 
 function AuthenticatedFocus() {
   const data = useTaskData();
+  const { user } = useAuth();
+  const [sessions, setSessions] = useState<FocusSession[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState("");
+  const loadHistory = useCallback(async () => {
+    if (!user) return;
+    setHistoryLoading(true);
+    setHistoryError("");
+    try {
+      setSessions(await loadFocusSessions(user.id));
+    } catch {
+      setHistoryError("Não foi possível carregar o histórico. Tente novamente.");
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [user]);
+  useEffect(() => {
+    void loadHistory();
+  }, [loadHistory]);
   const tasks = data.tasks.filter((task) => !task.archived);
   if (!tasks.length) {
     return (
@@ -101,6 +121,14 @@ function AuthenticatedFocus() {
         category: task.category_id ?? "",
       }))}
       sessions={[]}
+      persistedSessions={sessions}
+      historyLoading={historyLoading}
+      historyError={historyError}
+      onRetryHistory={loadHistory}
+      onSaveSession={async (session) => {
+        const saved = await saveFocusSession(session);
+        setSessions((current) => [saved, ...current].slice(0, 50));
+      }}
       categoryName={(id) =>
         data.categories.find((category) => category.id === id)?.name ?? "Sem categoria"
       }
@@ -114,11 +142,23 @@ function FocusTimer({
   sessions,
   categoryName,
   demo,
+  persistedSessions,
+  historyLoading = false,
+  historyError = "",
+  onRetryHistory,
+  onSaveSession,
 }: {
   tasks: { id: string; title: string; category: string }[];
   sessions: typeof focusSessions;
   categoryName: (id: string) => string;
   demo: boolean;
+  persistedSessions?: FocusSession[];
+  historyLoading?: boolean;
+  historyError?: string;
+  onRetryHistory?: () => void;
+  onSaveSession?: (
+    session: Omit<FocusSession, "id" | "user_id" | "created_at" | "updated_at">,
+  ) => Promise<void>;
 }) {
   const sessionMessage = (action: string) => `${action}${demo ? " nesta demonstração" : ""}.`;
   const [localSessions, setLocalSessions] = useState<LocalFocusSession[]>(() =>
@@ -132,6 +172,17 @@ function FocusTimer({
   const [isRunning, setIsRunning] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [focusMessage, setFocusMessage] = useState("");
+  const history = demo
+    ? localSessions
+    : (persistedSessions ?? []).map((s) => ({
+        id: s.id,
+        date: new Date(s.started_at).toLocaleDateString("pt-BR"),
+        task: tasks.find((t) => t.id === s.task_id)?.title ?? "Tarefa arquivada",
+        category: tasks.find((t) => t.id === s.task_id)?.category ?? "",
+        plannedMin: s.planned_minutes,
+        realMin: s.actual_minutes,
+        status: s.status === "completed" ? "Concluída" : ("Encerrada" as const),
+      }));
 
   const selected = tasks.find((t) => t.id === taskId);
   const customDurationValue = Number(customMinutes);
@@ -216,6 +267,19 @@ function FocusTimer({
         status: "Encerrada",
       },
     ]);
+    const actualMinutes = Math.max(1, Math.floor((duration * 60 - remainingSeconds) / 60));
+    if (!demo && onSaveSession) {
+      void onSaveSession({
+        task_id: selected?.id ?? null,
+        started_at: new Date(Date.now() - actualMinutes * 60000).toISOString(),
+        ended_at: new Date().toISOString(),
+        planned_minutes: duration,
+        actual_minutes: actualMinutes,
+        status: "ended",
+      })
+        .then(() => setFocusMessage("Sessão encerrada e salva no histórico."))
+        .catch(() => setFocusMessage("Sessão encerrada, mas não foi possível salvar o histórico."));
+    }
     setFocusMessage(
       demo
         ? "Sessão encerrada nesta demonstração. Nada foi salvo."
@@ -232,7 +296,7 @@ function FocusTimer({
         description={
           demo
             ? "O temporizador é apenas visual nesta etapa. A ideia é escolher uma tarefa, definir a duração e proteger o bloco."
-            : "Escolha uma tarefa real e proteja seu bloco de foco. O timer e o histórico são temporários: não são salvos ao sair ou recarregar."
+            : "Escolha uma tarefa real e proteja seu bloco de foco. Sessões encerradas ficam no seu histórico; o bloco em andamento é temporário."
         }
       />
 
@@ -297,7 +361,7 @@ function FocusTimer({
               <p className="mt-4 text-xs text-muted-foreground">
                 {demo
                   ? "O estado desta sessão existe somente nesta demonstração."
-                  : "Esta sessão é temporária e não será salva ao sair ou recarregar."}
+                  : "O bloco em andamento é temporário; ao encerrá-lo, salvaremos o histórico da sua conta."}
               </p>
             )}
             <Button
@@ -414,10 +478,21 @@ function FocusTimer({
           description={
             demo
               ? "Últimas sessões registradas nesta demonstração."
-              : "Sessões temporárias desta visita. Não são salvas na sua conta."
+              : "Sessões encerradas são salvas na sua conta. O bloco em andamento permanece apenas nesta visita."
           }
         >
-          {localSessions.length === 0 ? (
+          {historyLoading ? (
+            <p className="text-sm text-muted-foreground" role="status">
+              Carregando histórico…
+            </p>
+          ) : historyError ? (
+            <div role="alert" className="space-y-3">
+              <p className="text-sm text-destructive">{historyError}</p>
+              <Button variant="outline" onClick={onRetryHistory}>
+                Tentar novamente
+              </Button>
+            </div>
+          ) : history.length === 0 ? (
             <EmptyState
               icon={<Timer className="size-5" />}
               title="Ainda sem sessões"
@@ -425,7 +500,7 @@ function FocusTimer({
             />
           ) : (
             <ul className="divide-y divide-border">
-              {localSessions.map((s) => (
+              {history.map((s) => (
                 <li
                   key={s.id}
                   className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-3 first:pt-0 last:pb-0"
