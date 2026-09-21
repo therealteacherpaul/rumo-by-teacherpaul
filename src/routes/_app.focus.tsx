@@ -173,6 +173,18 @@ function FocusTimer({
   const [isRunning, setIsRunning] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [focusMessage, setFocusMessage] = useState("");
+  // Once the user picks a duration by hand, the task estimate never overrides it again.
+  const [durationTouched, setDurationTouched] = useState(false);
+  const estimateMinutes = tasks.find((task) => task.id === taskId)?.estimateMin ?? 0;
+  useEffect(() => {
+    if (durationTouched || isRunning || hasStarted) return;
+    if (!Number.isInteger(estimateMinutes) || estimateMinutes < 1) return;
+    const next = Math.min(240, Math.max(5, estimateMinutes));
+    setDuration(next);
+    setIsCustomDuration(!durations.includes(next));
+    setCustomMinutes(String(next));
+    setRemainingSeconds(next * 60);
+  }, [durationTouched, estimateMinutes, hasStarted, isRunning]);
   const history = demo
     ? localSessions
     : (persistedSessions ?? []).map((s) => ({
