@@ -119,6 +119,7 @@ function AuthenticatedFocus() {
         id: task.id,
         title: task.title,
         category: task.category_id ?? "",
+        estimateMin: task.estimate_min ?? 0,
       }))}
       sessions={[]}
       persistedSessions={sessions}
@@ -148,7 +149,7 @@ function FocusTimer({
   onRetryHistory,
   onSaveSession,
 }: {
-  tasks: { id: string; title: string; category: string }[];
+  tasks: { id: string; title: string; category: string; estimateMin?: number }[];
   sessions: typeof focusSessions;
   categoryName: (id: string) => string;
   demo: boolean;
@@ -172,6 +173,18 @@ function FocusTimer({
   const [isRunning, setIsRunning] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [focusMessage, setFocusMessage] = useState("");
+  // Once the user picks a duration by hand, the task estimate never overrides it again.
+  const [durationTouched, setDurationTouched] = useState(false);
+  const estimateMinutes = tasks.find((task) => task.id === taskId)?.estimateMin ?? 0;
+  useEffect(() => {
+    if (durationTouched || isRunning || hasStarted) return;
+    if (!Number.isInteger(estimateMinutes) || estimateMinutes < 1) return;
+    const next = Math.min(240, Math.max(5, estimateMinutes));
+    setDuration(next);
+    setIsCustomDuration(!durations.includes(next));
+    setCustomMinutes(String(next));
+    setRemainingSeconds(next * 60);
+  }, [durationTouched, estimateMinutes, hasStarted, isRunning]);
   const history = demo
     ? localSessions
     : (persistedSessions ?? []).map((s) => ({
@@ -406,6 +419,7 @@ function FocusTimer({
                     size="sm"
                     disabled={isRunning}
                     onClick={() => {
+                      setDurationTouched(true);
                       setIsCustomDuration(false);
                       setDuration(d);
                       if (!isRunning) setRemainingSeconds(d * 60);
@@ -422,6 +436,7 @@ function FocusTimer({
                   disabled={isRunning}
                   aria-label="Selecionar duração personalizada"
                   onClick={() => {
+                    setDurationTouched(true);
                     setIsCustomDuration(true);
                     setCustomMinutes(String(duration));
                     if (isCustomDurationValid) setRemainingSeconds(duration * 60);
@@ -449,6 +464,7 @@ function FocusTimer({
                     aria-label="Duração personalizada em minutos"
                     onChange={(event) => {
                       const value = event.target.value;
+                      setDurationTouched(true);
                       setCustomMinutes(value);
                       if (
                         Number.isInteger(Number(value)) &&

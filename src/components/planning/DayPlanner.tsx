@@ -123,8 +123,11 @@ export function DayPlanner({
     Number.isInteger(Number(review.minutes)) &&
     Number(review.minutes) >= 1 &&
     Number(review.minutes) <= review.max;
+  // The reviewed duration always wins over the value originally suggested by the AI.
   const acceptedChanges =
-    plan?.proposedChanges.filter((change) => decisions[change.id]?.status === "accepted") ?? [];
+    plan?.proposedChanges
+      .filter((change) => decisions[change.id]?.status === "accepted")
+      .map((change) => ({ ...change, minutes: decisions[change.id]!.minutes })) ?? [];
   async function applyAccepted() {
     if (!plan || !onApply || acceptedChanges.length === 0 || applying) return;
     setApplying(true);
@@ -132,7 +135,9 @@ export function DayPlanner({
     try {
       await onApply({ ...plan, proposedChanges: acceptedChanges });
       setMessage(
-        `${acceptedChanges.length} ${acceptedChanges.length === 1 ? "alteração aplicada" : "alterações aplicadas"}.`,
+        `${acceptedChanges.length} ${acceptedChanges.length === 1 ? "alteração aplicada" : "alterações aplicadas"}: ${acceptedChanges
+          .map((change) => `${change.minutes} min`)
+          .join(", ")}.`,
       );
       setConfirmApply(false);
     } catch (failure) {
@@ -440,7 +445,7 @@ export function DayPlanner({
           <ul className="space-y-2 text-sm">
             {acceptedChanges.map((change) => (
               <li key={change.id} className="rounded border p-2">
-                {change.reason}
+                <span className="font-medium">{change.minutes} min</span> · {change.reason}
               </li>
             ))}
           </ul>
