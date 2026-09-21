@@ -312,53 +312,6 @@ export type Database = {
         }
         Relationships: []
       }
-      focus_sessions: {
-        Row: {
-          actual_minutes: number
-          created_at: string
-          ended_at: string | null
-          id: string
-          planned_minutes: number
-          started_at: string
-          status: string
-          task_id: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          actual_minutes?: number
-          created_at?: string
-          ended_at?: string | null
-          id?: string
-          planned_minutes: number
-          started_at: string
-          status: string
-          task_id?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Update: {
-          actual_minutes?: number
-          created_at?: string
-          ended_at?: string | null
-          id?: string
-          planned_minutes?: number
-          started_at?: string
-          status?: string
-          task_id?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "focus_sessions_user_id_task_id_fkey"
-            columns: ["user_id", "task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
-            referencedColumns: ["user_id", "id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
