@@ -119,6 +119,7 @@ function AuthenticatedFocus() {
         id: task.id,
         title: task.title,
         category: task.category_id ?? "",
+        estimateMin: task.estimate_min ?? 0,
       }))}
       sessions={[]}
       persistedSessions={sessions}
@@ -148,7 +149,7 @@ function FocusTimer({
   onRetryHistory,
   onSaveSession,
 }: {
-  tasks: { id: string; title: string; category: string }[];
+  tasks: { id: string; title: string; category: string; estimateMin?: number }[];
   sessions: typeof focusSessions;
   categoryName: (id: string) => string;
   demo: boolean;
