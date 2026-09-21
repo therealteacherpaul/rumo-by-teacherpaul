@@ -419,6 +419,7 @@ function FocusTimer({
                     size="sm"
                     disabled={isRunning}
                     onClick={() => {
+                      setDurationTouched(true);
                       setIsCustomDuration(false);
                       setDuration(d);
                       if (!isRunning) setRemainingSeconds(d * 60);
@@ -435,6 +436,7 @@ function FocusTimer({
                   disabled={isRunning}
                   aria-label="Selecionar duração personalizada"
                   onClick={() => {
+                    setDurationTouched(true);
                     setIsCustomDuration(true);
                     setCustomMinutes(String(duration));
                     if (isCustomDurationValid) setRemainingSeconds(duration * 60);
@@ -462,6 +464,7 @@ function FocusTimer({
                     aria-label="Duração personalizada em minutos"
                     onChange={(event) => {
                       const value = event.target.value;
+                      setDurationTouched(true);
                       setCustomMinutes(value);
                       if (
                         Number.isInteger(Number(value)) &&
