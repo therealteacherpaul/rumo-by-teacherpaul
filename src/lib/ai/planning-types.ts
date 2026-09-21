@@ -26,9 +26,10 @@ export type SuggestedBlock = {
 export type ProposedChange = {
   id: string;
   taskId: string;
-  kind: "estimate";
+  kind: "estimate" | "priority" | "dueDate" | "todayPriority";
   minutes: number;
   reason: string;
+  value?: string | null | undefined;
 };
 export type PlanningSuggestion = {
   source: "ai" | "demo";

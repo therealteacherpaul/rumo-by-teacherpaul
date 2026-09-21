@@ -19,7 +19,16 @@ const schema = z.object({
     .max(100),
   warnings: z.array(text).max(1000),
   proposedChanges: z
-    .array(z.object({ id: text, taskId: text, kind: z.literal("estimate"), minutes, reason: text }))
+    .array(
+      z.object({
+        id: text,
+        taskId: text,
+        kind: z.enum(["estimate", "priority", "dueDate", "todayPriority"]),
+        minutes,
+        reason: text,
+        value: z.string().nullable().optional(),
+      }),
+    )
     .max(100),
 });
 export function validatePlan(

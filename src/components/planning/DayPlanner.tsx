@@ -26,10 +26,12 @@ export function DayPlanner({
   input,
   mode,
   unavailable = false,
+  onApply,
 }: {
   input: PlanningInput;
   mode: PlanningOptions["mode"];
   unavailable?: boolean;
+  onApply?: (suggestion: PlanningSuggestion) => Promise<void>;
 }) {
   const [available, setAvailable] = useState(String(input.availableMinutes));
   const [plan, setPlan] = useState<PlanningSuggestion | null>(null);
@@ -39,6 +41,8 @@ export function DayPlanner({
   const [decisions, setDecisions] = useState<Record<string, Decision>>({});
   const [reviewError, setReviewError] = useState("");
   const [review, setReview] = useState<Review | null>(null);
+  const [confirmApply, setConfirmApply] = useState(false);
+  const [applying, setApplying] = useState(false);
   const request = useRef<AbortController | null>(null);
   const minutes = Number(available);
   const valid =
@@ -119,6 +123,28 @@ export function DayPlanner({
     Number.isInteger(Number(review.minutes)) &&
     Number(review.minutes) >= 1 &&
     Number(review.minutes) <= review.max;
+  const acceptedChanges =
+    plan?.proposedChanges.filter((change) => decisions[change.id]?.status === "accepted") ?? [];
+  async function applyAccepted() {
+    if (!plan || !onApply || acceptedChanges.length === 0 || applying) return;
+    setApplying(true);
+    setReviewError("");
+    try {
+      await onApply({ ...plan, proposedChanges: acceptedChanges });
+      setMessage(
+        `${acceptedChanges.length} ${acceptedChanges.length === 1 ? "alteração aplicada" : "alterações aplicadas"}.`,
+      );
+      setConfirmApply(false);
+    } catch (failure) {
+      setReviewError(
+        failure instanceof Error
+          ? failure.message
+          : "Não foi possível aplicar as alterações. Tente novamente.",
+      );
+    } finally {
+      setApplying(false);
+    }
+  }
   return (
     <section aria-label="Planejador do dia" className="min-w-0">
       <SectionCard
@@ -326,6 +352,13 @@ export function DayPlanner({
                     );
                   })}
                 </ol>
+                {onApply && acceptedChanges.length > 0 && (
+                  <Button onClick={() => setConfirmApply(true)} disabled={applying}>
+                    {applying
+                      ? "Aplicando…"
+                      : `Aplicar ${acceptedChanges.length} ${acceptedChanges.length === 1 ? "alteração aceita" : "alterações aceitas"}`}
+                  </Button>
+                )}
               </div>
             )}
             {message && (
@@ -393,6 +426,32 @@ export function DayPlanner({
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={confirmApply} onOpenChange={setConfirmApply}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar alterações</DialogTitle>
+            <DialogDescription>
+              Revise as alterações aceitas. Elas serão gravadas individualmente com sua sessão
+              autenticada e nada será concluído, arquivado ou excluído automaticamente.
+            </DialogDescription>
+          </DialogHeader>
+          <ul className="space-y-2 text-sm">
+            {acceptedChanges.map((change) => (
+              <li key={change.id} className="rounded border p-2">
+                {change.reason}
+              </li>
+            ))}
+          </ul>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => void applyAccepted()} disabled={applying}>
+              Confirmar e aplicar
+            </Button>
+            <Button variant="outline" onClick={() => setConfirmApply(false)} disabled={applying}>
+              Cancelar
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </section>
