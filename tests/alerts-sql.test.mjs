@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const migration = readFileSync("supabase/migrations/20260922130000_alert_preferences.sql", "utf8");
+const migration = readFileSync(
+  "supabase/migrations/20260922090826_a06dd51a-f489-4a18-942d-9d6565705de5.sql",
+  "utf8",
+);
 const repository = readFileSync("src/lib/alerts/alert-preferences-repository.ts", "utf8");
 
 test("alert preferences migration isolates every operation by auth.uid", () => {
