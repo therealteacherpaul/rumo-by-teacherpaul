@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_preferences: {
+        Row: {
+          created_at: string
+          daily_summary_time: string
+          deadline_lead_days: number
+          enabled: boolean
+          focus_enabled: boolean
+          habits_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_summary_time?: string
+          deadline_lead_days?: number
+          enabled?: boolean
+          focus_enabled?: boolean
+          habits_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          daily_summary_time?: string
+          deadline_lead_days?: number
+          enabled?: boolean
+          focus_enabled?: boolean
+          habits_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           active: boolean
