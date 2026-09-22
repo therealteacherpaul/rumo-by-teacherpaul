@@ -100,12 +100,6 @@ export type Database = {
           },
         ]
       }
-      alert_preferences: {
-        Row: { user_id: string; enabled: boolean; habits_enabled: boolean; focus_enabled: boolean; deadline_lead_days: number; daily_summary_time: string; created_at: string; updated_at: string }
-        Insert: { user_id?: string; enabled?: boolean; habits_enabled?: boolean; focus_enabled?: boolean; deadline_lead_days?: number; daily_summary_time?: string; created_at?: string; updated_at?: string }
-        Update: { user_id?: string; enabled?: boolean; habits_enabled?: boolean; focus_enabled?: boolean; deadline_lead_days?: number; daily_summary_time?: string; created_at?: string; updated_at?: string }
-        Relationships: []
-      }
       habit_check_ins: {
         Row: {
           created_at: string
