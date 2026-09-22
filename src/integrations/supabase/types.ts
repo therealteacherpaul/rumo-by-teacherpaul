@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_preferences: {
+        Row: {
+          created_at: string
+          daily_summary_time: string
+          deadline_lead_days: number
+          enabled: boolean
+          focus_enabled: boolean
+          habits_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_summary_time?: string
+          deadline_lead_days?: number
+          enabled?: boolean
+          focus_enabled?: boolean
+          habits_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          daily_summary_time?: string
+          deadline_lead_days?: number
+          enabled?: boolean
+          focus_enabled?: boolean
+          habits_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           active: boolean
@@ -99,12 +132,6 @@ export type Database = {
             referencedColumns: ["user_id", "id"]
           },
         ]
-      }
-      alert_preferences: {
-        Row: { user_id: string; enabled: boolean; habits_enabled: boolean; focus_enabled: boolean; deadline_lead_days: number; daily_summary_time: string; created_at: string; updated_at: string }
-        Insert: { user_id?: string; enabled?: boolean; habits_enabled?: boolean; focus_enabled?: boolean; deadline_lead_days?: number; daily_summary_time?: string; created_at?: string; updated_at?: string }
-        Update: { user_id?: string; enabled?: boolean; habits_enabled?: boolean; focus_enabled?: boolean; deadline_lead_days?: number; daily_summary_time?: string; created_at?: string; updated_at?: string }
-        Relationships: []
       }
       habit_check_ins: {
         Row: {
