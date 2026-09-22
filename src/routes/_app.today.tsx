@@ -29,6 +29,10 @@ import {
   todayAppointments,
   todayPriorities,
 } from "@/lib/demo-data";
+import { tasks as demoTasks } from "@/lib/demo-data";
+import { habits as demoHabits } from "@/lib/habit-data";
+import { buildAlerts } from "@/lib/alerts/alert-rules";
+import { AlertCenter } from "@/components/alerts/AlertCenter";
 
 export const Route = createFileRoute("/_app/today")({
   loader: () => ({
@@ -97,6 +101,21 @@ function TodayPage() {
       />
 
       <DemoNotice />
+      <AlertCenter
+        demo
+        alerts={buildAlerts({
+          tasks: demoTasks.map((task) => ({
+            id: task.id,
+            title: task.title,
+            due_date: task.due,
+            archived: false,
+            status: task.status,
+          })),
+          priorities,
+          habits: demoHabits,
+          focus: [],
+        })}
+      />
       <DemoDayPlanner completedIds={completedPriorityIds} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
