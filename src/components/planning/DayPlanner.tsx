@@ -124,10 +124,20 @@ export function DayPlanner({
     Number(review.minutes) >= 1 &&
     Number(review.minutes) <= review.max;
   // The reviewed duration always wins over the value originally suggested by the AI.
-  const acceptedChanges =
-    plan?.proposedChanges
-      .filter((change) => decisions[change.id]?.status === "accepted")
-      .map((change) => ({ ...change, minutes: decisions[change.id]!.minutes })) ?? [];
+  const acceptedChanges = plan
+    ? [
+        ...plan.proposedChanges,
+        ...plan.suggestedBlocks.map((block) => ({
+          id: block.id,
+          taskId: block.taskId,
+          kind: "estimate" as const,
+          minutes: block.minutes,
+          reason: block.reason,
+        })),
+      ]
+        .filter((change) => decisions[change.id]?.status === "accepted")
+        .map((change) => ({ ...change, minutes: decisions[change.id]!.minutes }))
+    : [];
   async function applyAccepted() {
     if (!plan || !onApply || acceptedChanges.length === 0 || applying) return;
     setApplying(true);
