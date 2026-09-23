@@ -20,6 +20,8 @@ test("alert rules define deterministic, deduplicated keys and demo-safe links", 
   );
   assert.match(ui, /search=\{demo \? \{ mode: "demo" \} : \{\}\}/);
   assert.match(ui, /dismissed/);
+  assert.match(ui, /Ativar notificações nesta aba/);
+  assert.match(ui, /!demo/);
 });
 
 test("alert preferences are independent defaults for each user instance", async () => {

@@ -4,6 +4,11 @@ import { SectionCard } from "@/components/common/SectionCard";
 import { Button } from "@/components/ui/button";
 import type { AlertItem, AlertPreferences } from "@/lib/alerts/alert-types";
 import { defaultAlertPreferences } from "@/lib/alerts/alert-types";
+import {
+  browserNotificationStatus,
+  deliverForegroundAlerts,
+  requestBrowserNotificationPermission,
+} from "@/lib/alerts/alert-delivery";
 
 export function AlertCenter({
   alerts,
@@ -28,6 +33,7 @@ export function AlertCenter({
     persistedPreferences ?? defaultAlertPreferences,
   );
   const [dismissed, setDismissed] = useState<string[]>([]);
+  const [notificationMessage, setNotificationMessage] = useState("");
   useEffect(() => {
     if (persistedPreferences) setPreferences(persistedPreferences);
   }, [persistedPreferences]);
@@ -39,6 +45,27 @@ export function AlertCenter({
     () => (preferences.enabled ? alerts.filter((alert) => !dismissed.includes(alert.id)) : []),
     [alerts, dismissed, preferences.enabled],
   );
+  const enableNotifications = async () => {
+    const permission = await requestBrowserNotificationPermission();
+    if (permission === "unsupported") {
+      setNotificationMessage(
+        "Seu navegador não oferece notificações. A Central de alertas continua disponível.",
+      );
+      return;
+    }
+    if (permission !== "granted") {
+      setNotificationMessage(
+        "As notificações foram negadas. Você pode reativá-las nas configurações do navegador.",
+      );
+      return;
+    }
+    const delivered = deliverForegroundAlerts(visible, preferences);
+    setNotificationMessage(
+      delivered
+        ? `${delivered} alerta${delivered === 1 ? "" : "s"} enviado${delivered === 1 ? "" : "s"} nesta aba.`
+        : "Nenhum alerta novo para enviar.",
+    );
+  };
   return (
     <SectionCard
       title="Central de alertas"
@@ -140,6 +167,23 @@ export function AlertCenter({
           />
         </label>
         {preferencesSaving && <p role="status">Salvando preferências…</p>}
+        {!demo && (
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11 justify-self-start"
+              disabled={!preferences.enabled || preferencesSaving}
+              onClick={() => void enableNotifications()}
+            >
+              Ativar notificações nesta aba
+            </Button>
+            {notificationMessage && <p role="status">{notificationMessage}</p>}
+            {browserNotificationStatus() === "granted" && (
+              <p className="text-muted-foreground">Notificações desta aba estão ativas.</p>
+            )}
+          </>
+        )}
       </div>
     </SectionCard>
   );
