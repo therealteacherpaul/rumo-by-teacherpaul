@@ -17,8 +17,10 @@ export async function requestBrowserNotificationPermission(): Promise<BrowserNot
 export function deliverForegroundAlerts(
   alerts: readonly AlertItem[],
   preferences: AlertPreferences,
+  foregroundEnabled = true,
 ): number {
-  if (!preferences.enabled || browserNotificationStatus() !== "granted") return 0;
+  if (!foregroundEnabled || !preferences.enabled || browserNotificationStatus() !== "granted")
+    return 0;
   let delivered = 0;
   for (const alert of alerts) {
     if (deliveredAlertIds.has(alert.id)) continue;

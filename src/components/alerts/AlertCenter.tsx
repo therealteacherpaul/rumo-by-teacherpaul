@@ -34,9 +34,16 @@ export function AlertCenter({
   );
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [foregroundEnabled, setForegroundEnabled] = useState(
+    () => !demo && browserNotificationStatus() === "granted",
+  );
+  const [notificationBusy, setNotificationBusy] = useState(false);
   useEffect(() => {
     if (persistedPreferences) setPreferences(persistedPreferences);
   }, [persistedPreferences]);
+  useEffect(() => {
+    if (demo) setForegroundEnabled(false);
+  }, [demo]);
   const updatePreferences = (next: AlertPreferences) => {
     setPreferences(next);
     void onPreferencesChange?.(next);
@@ -46,25 +53,38 @@ export function AlertCenter({
     [alerts, dismissed, preferences.enabled],
   );
   const enableNotifications = async () => {
-    const permission = await requestBrowserNotificationPermission();
-    if (permission === "unsupported") {
+    if (foregroundEnabled) {
+      setForegroundEnabled(false);
       setNotificationMessage(
-        "Seu navegador não oferece notificações. A Central de alertas continua disponível.",
+        "Notificações desativadas nesta aba. A permissão do navegador permanece inalterada.",
       );
       return;
     }
-    if (permission !== "granted") {
+    setNotificationBusy(true);
+    try {
+      const permission = await requestBrowserNotificationPermission();
+      if (permission === "unsupported") {
+        setNotificationMessage(
+          "Seu navegador não oferece notificações. A Central de alertas continua disponível.",
+        );
+        return;
+      }
+      if (permission !== "granted") {
+        setNotificationMessage(
+          "As notificações foram negadas. Libere a permissão nas configurações do navegador para tentar novamente.",
+        );
+        return;
+      }
+      setForegroundEnabled(true);
+      const delivered = deliverForegroundAlerts(visible, preferences, true);
       setNotificationMessage(
-        "As notificações foram negadas. Você pode reativá-las nas configurações do navegador.",
+        delivered
+          ? `${delivered} alerta${delivered === 1 ? "" : "s"} enviado${delivered === 1 ? "" : "s"} nesta aba.`
+          : "Nenhum alerta novo para enviar.",
       );
-      return;
+    } finally {
+      setNotificationBusy(false);
     }
-    const delivered = deliverForegroundAlerts(visible, preferences);
-    setNotificationMessage(
-      delivered
-        ? `${delivered} alerta${delivered === 1 ? "" : "s"} enviado${delivered === 1 ? "" : "s"} nesta aba.`
-        : "Nenhum alerta novo para enviar.",
-    );
   };
   return (
     <SectionCard
@@ -173,10 +193,14 @@ export function AlertCenter({
               type="button"
               variant="outline"
               className="min-h-11 justify-self-start"
-              disabled={!preferences.enabled || preferencesSaving}
+              disabled={!preferences.enabled || preferencesSaving || notificationBusy}
               onClick={() => void enableNotifications()}
             >
-              Ativar notificações nesta aba
+              {notificationBusy
+                ? "Verificando permissão…"
+                : foregroundEnabled
+                  ? "Desativar notificações nesta aba"
+                  : "Ativar notificações nesta aba"}
             </Button>
             {notificationMessage && <p role="status">{notificationMessage}</p>}
             {browserNotificationStatus() === "granted" && (

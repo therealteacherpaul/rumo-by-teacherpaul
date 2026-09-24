@@ -8,6 +8,8 @@ test("foreground delivery is explicit, preference-aware and deduplicated", async
   assert.match(source, /deliveredAlertIds/);
   assert.match(source, /preferences\.enabled/);
   assert.match(source, /new Notification/);
+  assert.match(source, /foregroundEnabled/);
+  assert.match(source, /if \(!foregroundEnabled/);
 });
 
 test("daily summary is a contract only and respects disabled preferences", async () => {
