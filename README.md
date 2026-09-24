@@ -1,5 +1,12 @@
 # RUMO by Teacher Paul
 
+## Projeto acadêmico — Sistema Operacional Pessoal (POS) — RUMO, by Teacher Paul
+
+**Aluno:** Paulo Ricardo Takara Stefens
+**RA:** 232231
+**Instituição:** UniFECAF
+**Disciplina:** Produtividade e Gestão do Tempo
+
 **Seu sistema operacional pessoal.**
 **Powered by Método BÚSSOLA™**
 
