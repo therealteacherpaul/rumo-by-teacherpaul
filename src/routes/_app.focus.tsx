@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Pause, Play, RotateCcw, Timer } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
 import { useCategories } from "@/hooks/use-categories";
@@ -45,6 +45,50 @@ export const Route = createFileRoute("/_app/focus")({
 });
 
 const durations = [25, 50, 90];
+const ACTIVE_FOCUS_KEY = "rumo:focus:active";
+type ActiveFocusCheckpoint = {
+  taskId: string;
+  plannedMin: number;
+  startedAt: string;
+  elapsedSec: number;
+};
+
+/** Saves a block left running by a reload, crash or lost connection. Keeps it for retry on failure. */
+async function recoverInterruptedFocus(userId: string) {
+  const key = `${ACTIVE_FOCUS_KEY}:${userId}`;
+  let checkpoint: ActiveFocusCheckpoint | null = null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    checkpoint = raw ? (JSON.parse(raw) as ActiveFocusCheckpoint) : null;
+  } catch {
+    checkpoint = null;
+  }
+  if (!checkpoint) return;
+  const actualMinutes = Math.floor(checkpoint.elapsedSec / 60);
+  if (actualMinutes >= 1 && checkpoint.taskId) {
+    const started = new Date(checkpoint.startedAt).getTime();
+    await saveFocusSession({
+      task_id: checkpoint.taskId,
+      started_at: checkpoint.startedAt,
+      ended_at: new Date(started + checkpoint.elapsedSec * 1000).toISOString(),
+      planned_minutes: checkpoint.plannedMin,
+      actual_minutes: actualMinutes,
+      status: "ended",
+    });
+  }
+  window.localStorage.removeItem(key);
+}
+
+function carriedFocusMinutes(sessions: FocusSession[], taskId: string) {
+  const today = new Date().toDateString();
+  let total = 0;
+  for (const s of sessions) {
+    if (s.task_id !== taskId || new Date(s.started_at).toDateString() !== today) continue;
+    if (s.status === "completed") break;
+    if (s.status === "ended") total += s.actual_minutes;
+  }
+  return total;
+}
 type LocalFocusSession = Omit<(typeof focusSessions)[number], "category"> & {
   category: string;
   status: "Concluída" | "Encerrada";
@@ -88,6 +132,7 @@ function AuthenticatedFocus() {
     setHistoryLoading(true);
     setHistoryError("");
     try {
+      await recoverInterruptedFocus(user.id);
       setSessions(await loadFocusSessions(user.id));
     } catch {
       setHistoryError("Não foi possível carregar o histórico. Tente novamente.");
@@ -162,6 +207,8 @@ function FocusTimer({
   ) => Promise<void>;
 }) {
   const sessionMessage = (action: string) => `${action}${demo ? " nesta demonstração" : ""}.`;
+  const { user } = useAuth();
+  const storageKey = !demo && user ? `${ACTIVE_FOCUS_KEY}:${user.id}` : null;
   const [localSessions, setLocalSessions] = useState<LocalFocusSession[]>(() =>
     sessions.map((session) => ({ ...session, status: "Concluída" })),
   );
@@ -173,6 +220,8 @@ function FocusTimer({
   const [isRunning, setIsRunning] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [focusMessage, setFocusMessage] = useState("");
+  const blockSecondsRef = useRef(0);
+  const startedAtRef = useRef<string | null>(null);
   // Once the user picks a duration by hand, the task estimate never overrides it again.
   const [durationTouched, setDurationTouched] = useState(false);
   const estimateMinutes = tasks.find((task) => task.id === taskId)?.estimateMin ?? 0;
@@ -185,6 +234,15 @@ function FocusTimer({
     setCustomMinutes(String(next));
     setRemainingSeconds(next * 60);
   }, [durationTouched, estimateMinutes, hasStarted, isRunning]);
+
+  // Minutes already done today on this task in interrupted blocks (since its last completed block).
+  const carriedMinutes = demo ? 0 : carriedFocusMinutes(persistedSessions ?? [], taskId);
+  const initialSeconds = Math.max(60, (duration - carriedMinutes) * 60);
+  useEffect(() => {
+    if (isRunning || hasStarted) return;
+    setRemainingSeconds(initialSeconds);
+  }, [initialSeconds, isRunning, hasStarted]);
+
   const history = demo
     ? localSessions
     : (persistedSessions ?? []).map((s) => ({
@@ -219,40 +277,90 @@ function FocusTimer({
 
   useEffect(() => {
     if (!isRunning) return;
-
     const timer = window.setInterval(() => {
-      setRemainingSeconds((current) => {
-        if (current <= 1) {
-          setIsRunning(false);
-          setHasStarted(false);
-          setLocalSessions((currentSessions) => [
-            ...currentSessions,
-            {
-              id: `local-${currentSessions.length + 1}`,
-              date: "Agora",
-              task: selected?.title ?? "Tarefa selecionada",
-              category: selected?.category ?? (demo ? "rumo" : ""),
-              plannedMin: duration,
-              realMin: duration,
-              status: "Concluída",
-            },
-          ]);
-          setFocusMessage(
-            demo
-              ? "Sessão encerrada nesta demonstração."
-              : "Sessão encerrada. O histórico é temporário e não foi salvo.",
-          );
-          return 0;
-        }
-        return current - 1;
-      });
+      setRemainingSeconds((current) => Math.max(0, current - 1));
     }, 1000);
-
     return () => window.clearInterval(timer);
-  }, [demo, duration, isRunning, selected?.category, selected?.title]);
+  }, [isRunning]);
+
+  // Checkpoint the running block locally so a reload, crash or lost connection never loses time.
+  useEffect(() => {
+    if (!storageKey || !hasStarted || !startedAtRef.current || !selected) return;
+    const elapsedSec = blockSecondsRef.current - remainingSeconds;
+    try {
+      window.localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          taskId: selected.id,
+          plannedMin: duration,
+          startedAt: startedAtRef.current,
+          elapsedSec,
+        } satisfies ActiveFocusCheckpoint),
+      );
+    } catch {
+      /* storage indisponível */
+    }
+  }, [storageKey, hasStarted, remainingSeconds, duration, selected]);
+
+  const persistProgress = (status: "completed" | "ended", remainingNow: number) => {
+    const elapsedSec = blockSecondsRef.current - remainingNow;
+    const actualMinutes = Math.floor(elapsedSec / 60);
+    const startedAt = startedAtRef.current;
+    startedAtRef.current = null;
+    if (demo || !onSaveSession || !selected || !startedAt || actualMinutes < 1) {
+      if (storageKey) window.localStorage.removeItem(storageKey);
+      return Promise.resolve(false);
+    }
+    return onSaveSession({
+      task_id: selected.id,
+      started_at: startedAt,
+      ended_at: new Date().toISOString(),
+      planned_minutes: duration,
+      actual_minutes: actualMinutes,
+      status,
+    }).then(() => {
+      if (storageKey) window.localStorage.removeItem(storageKey);
+      return true;
+    });
+  };
+
+  const addLocalSession = (status: "Concluída" | "Encerrada", realMin: number) =>
+    setLocalSessions((currentSessions) => [
+      ...currentSessions,
+      {
+        id: `local-${currentSessions.length + 1}`,
+        date: "Agora",
+        task: selected?.title ?? "Tarefa selecionada",
+        category: selected?.category ?? "rumo",
+        plannedMin: duration,
+        realMin,
+        status,
+      },
+    ]);
+
+  useEffect(() => {
+    if (!hasStarted || remainingSeconds !== 0) return;
+    setIsRunning(false);
+    setHasStarted(false);
+    if (demo) {
+      addLocalSession("Concluída", duration);
+      setFocusMessage("Sessão encerrada nesta demonstração.");
+      return;
+    }
+    void persistProgress("completed", 0)
+      .then(() => setFocusMessage("Bloco concluído e salvo no histórico."))
+      .catch(() =>
+        setFocusMessage("Bloco concluído; o tempo será salvo quando a conexão voltar."),
+      );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remainingSeconds, hasStarted]);
 
   const startFocus = () => {
     if (remainingSeconds === 0 || (isCustomDuration && !isCustomDurationValid)) return;
+    if (!startedAtRef.current) {
+      blockSecondsRef.current = remainingSeconds;
+      startedAtRef.current = new Date().toISOString();
+    }
     setIsRunning(true);
     setHasStarted(true);
     setFocusMessage(sessionMessage("Sessão de foco iniciada"));
@@ -260,44 +368,45 @@ function FocusTimer({
 
   const resetFocus = () => {
     setIsRunning(false);
-    setRemainingSeconds(duration * 60);
-    setHasStarted(true);
-    setFocusMessage(sessionMessage("Sessão reiniciada"));
+    setHasStarted(false);
+    if (demo) {
+      startedAtRef.current = null;
+      setRemainingSeconds(duration * 60);
+      setFocusMessage(sessionMessage("Sessão reiniciada"));
+      return;
+    }
+    void persistProgress("ended", remainingSeconds)
+      .then((saved) =>
+        setFocusMessage(
+          saved
+            ? "Tempo feito salvo e somado ao novo bloco."
+            : "Sessão reiniciada (menos de 1 minuto não é salvo).",
+        ),
+      )
+      .catch(() => setFocusMessage("Não foi possível salvar agora; o tempo será salvo depois."));
   };
 
   const endFocus = () => {
     setIsRunning(false);
     setHasStarted(false);
-    setLocalSessions((currentSessions) => [
-      ...currentSessions,
-      {
-        id: `local-${currentSessions.length + 1}`,
-        date: "Agora",
-        task: selected?.title ?? "Tarefa selecionada",
-        category: selected?.category ?? (demo ? "rumo" : ""),
-        plannedMin: duration,
-        realMin: Math.max(1, Math.floor((duration * 60 - remainingSeconds) / 60)),
-        status: "Encerrada",
-      },
-    ]);
-    const actualMinutes = Math.max(1, Math.floor((duration * 60 - remainingSeconds) / 60));
-    if (!demo && onSaveSession) {
-      void onSaveSession({
-        task_id: selected?.id ?? null,
-        started_at: new Date(Date.now() - actualMinutes * 60000).toISOString(),
-        ended_at: new Date().toISOString(),
-        planned_minutes: duration,
-        actual_minutes: actualMinutes,
-        status: "ended",
-      })
-        .then(() => setFocusMessage("Sessão encerrada e salva no histórico."))
-        .catch(() => setFocusMessage("Sessão encerrada, mas não foi possível salvar o histórico."));
+    const realMin = Math.max(1, Math.floor((blockSecondsRef.current - remainingSeconds) / 60));
+    if (demo) {
+      startedAtRef.current = null;
+      addLocalSession("Encerrada", realMin);
+      setFocusMessage("Sessão encerrada nesta demonstração. Nada foi salvo.");
+      return;
     }
-    setFocusMessage(
-      demo
-        ? "Sessão encerrada nesta demonstração. Nada foi salvo."
-        : "Sessão encerrada. O histórico é temporário e não foi salvo.",
-    );
+    void persistProgress("ended", remainingSeconds)
+      .then((saved) =>
+        setFocusMessage(
+          saved
+            ? "Sessão encerrada e salva no histórico."
+            : "Sessão encerrada (menos de 1 minuto não é salvo).",
+        ),
+      )
+      .catch(() =>
+        setFocusMessage("Sessão encerrada; o tempo será salvo quando a conexão voltar."),
+      );
   };
 
   return (
