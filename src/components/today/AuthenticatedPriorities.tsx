@@ -265,11 +265,10 @@ export function AuthenticatedPriorities() {
         error={habits.error || auxiliaryError}
         onRetry={() => void Promise.all([habits.reload(), loadAlertData()])}
         preferences={preferences}
-        onPreferencesChange={updatePreferences}
-        preferencesSaving={preferencesSaving}
       />
       {prioritiesSection}
       <AuthenticatedDayPlanner priorities={items} date={date} unavailable={loadFailed} />
     </>
   );
+
 }
