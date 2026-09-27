@@ -176,8 +176,11 @@ function AuthenticatedFocus() {
       historyError={historyError}
       onRetryHistory={loadHistory}
       onSaveSession={async (session) => {
-        const saved = await saveFocusSession(session);
-        setSessions((current) => [saved, ...current].slice(0, 50));
+        if (!user) return;
+        const { session: saved, replacedId } = await accumulateFocusSession(user.id, session);
+        setSessions((current) =>
+          [saved, ...current.filter((item) => item.id !== (replacedId ?? saved.id))].slice(0, 50),
+        );
       }}
       categoryName={(id) =>
         data.categories.find((category) => category.id === id)?.name ?? "Sem categoria"
