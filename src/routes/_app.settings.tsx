@@ -115,6 +115,8 @@ function SettingsPage() {
         <TaskDataProvider key={user.id} userId={user.id}>
           <CategoryManager />
         </TaskDataProvider>
+        <AlertSettings />
+
       </div>
     );
   }
