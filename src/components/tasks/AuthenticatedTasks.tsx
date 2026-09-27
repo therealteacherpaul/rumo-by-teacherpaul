@@ -320,10 +320,13 @@ function TaskEditor({ task, onSaved }: { task: UserTask | null; onSaved: () => v
       </label>
       <DataSelect
         label="Categoria"
+        required
         value={draft.category_id ?? ""}
         onChange={(event) => setDraft({ ...draft, category_id: event.target.value })}
       >
-        <option value="">Sem categoria</option>
+        <option value="" disabled>
+          Escolha uma categoria
+        </option>
         {categories.map((item) => (
           <option key={item.id} value={item.id}>
             {item.name}
@@ -446,11 +449,12 @@ function TaskEditor({ task, onSaved }: { task: UserTask | null; onSaved: () => v
         disabled={
           data.pending ||
           !draft.title.trim() ||
+          !draft.category_id ||
           !Number.isInteger(draft.estimate_min) ||
           draft.estimate_min < 0
         }
       >
-        {data.pending ? "Salvando…" : "Salvar tarefa"}
+        {data.saving ? "Salvando…" : "Salvar tarefa"}
       </Button>
     </form>
   );
