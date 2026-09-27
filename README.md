@@ -56,9 +56,9 @@ Cronômetro monotarefa com persistência contínua, sobrevivência a recarregame
 ---
 
 ### 5. Dashboard
-Cronômetro monotarefa com persistência contínua, sobrevivência a recarregamentos (F5) e consolidação automática de tempo por tarefa.
+Dashboard de acompanhamento
 <br>
-<img src="docs/IMAGEM 05 — Dashboard.png" alt="Tela Foco" width="700">
+<img src="docs/IMAGEM 05 — Dashboard.png" alt="Dashboard" width="700">
 
 ---
 
