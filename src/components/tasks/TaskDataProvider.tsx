@@ -13,6 +13,7 @@ function readableError(error: unknown): string {
   if (code === "23503")
     return "A categoria, projeto ou tarefa não está disponível para sua conta. Atualize os dados.";
   if (code === "23514") return "Confira os campos e os limites de categorias e duração estimada.";
+  if (code === "23502" || code === "22P02") return "Preencha os campos obrigatórios, como a categoria.";
   if (code === "42501")
     return "Sem permissão para esta operação. Entre novamente e tente outra vez.";
   if (code === "42P01" || code === "PGRST205")
@@ -83,13 +84,19 @@ export function TaskDataProvider({ userId, children }: { userId: string; childre
       await load();
       return { valid: true };
     } catch (failure) {
-      const reason = saved
-        ? "Alteração salva, mas a atualização da tela falhou. Use Tentar novamente antes de continuar."
-        : readableError(failure);
-      if (alive.current) setError(reason);
+      if (!saved) {
+        // A rejected write leaves the loaded data intact: report it where it happened
+        // and keep the page usable instead of locking every form behind a global error.
+        console.error("Task data write failed", failure);
+        return { valid: false, reason: readableError(failure) };
+      }
       // The write is already committed: clear the submitted form even if refreshing failed.
       // The visible error keeps further writes disabled until the user retries loading.
-      return saved ? { valid: true } : { valid: false, reason };
+      if (alive.current)
+        setError(
+          "Alteração salva, mas a atualização da tela falhou. Use Tentar novamente antes de continuar.",
+        );
+      return { valid: true };
     } finally {
       busy.current = false;
       if (alive.current) setPending(false);
@@ -172,6 +179,8 @@ export function TaskDataProvider({ userId, children }: { userId: string; childre
           .single(),
       ),
     saveTask: (draft, id) => {
+      if (!draft.category_id || !data.categories.some((item) => item.id === draft.category_id))
+        return Promise.resolve({ valid: false, reason: "Escolha uma categoria para a tarefa." });
       if (
         !draft.title.trim() ||
         !Number.isInteger(draft.estimate_min) ||
