@@ -4,11 +4,11 @@ import { SectionCard } from "@/components/common/SectionCard";
 import { Button } from "@/components/ui/button";
 import type { AlertItem, AlertPreferences } from "@/lib/alerts/alert-types";
 import { defaultAlertPreferences } from "@/lib/alerts/alert-types";
-import {
-  browserNotificationStatus,
-  deliverForegroundAlerts,
-  requestBrowserNotificationPermission,
-} from "@/lib/alerts/alert-delivery";
+import { browserNotificationStatus, deliverForegroundAlerts } from "@/lib/alerts/alert-delivery";
+import { pluralize } from "@/lib/pluralize";
+
+/** How many alerts the list shows at once, to keep the Hoje screen readable. */
+export const ALERT_PAGE_SIZE = 3;
 
 export function AlertCenter({
   alerts,
@@ -16,9 +16,7 @@ export function AlertCenter({
   loading = false,
   error = "",
   onRetry,
-  preferences: persistedPreferences,
-  onPreferencesChange,
-  preferencesSaving = false,
+  preferences = defaultAlertPreferences,
 }: {
   alerts: AlertItem[];
   demo?: boolean;
@@ -26,66 +24,18 @@ export function AlertCenter({
   error?: string;
   onRetry?: () => void;
   preferences?: AlertPreferences;
-  onPreferencesChange?: (preferences: AlertPreferences) => void | Promise<void>;
-  preferencesSaving?: boolean;
 }) {
-  const [preferences, setPreferences] = useState<AlertPreferences>(
-    persistedPreferences ?? defaultAlertPreferences,
-  );
   const [dismissed, setDismissed] = useState<string[]>([]);
-  const [notificationMessage, setNotificationMessage] = useState("");
-  const [foregroundEnabled, setForegroundEnabled] = useState(
-    () => !demo && browserNotificationStatus() === "granted",
-  );
-  const [notificationBusy, setNotificationBusy] = useState(false);
-  useEffect(() => {
-    if (persistedPreferences) setPreferences(persistedPreferences);
-  }, [persistedPreferences]);
-  useEffect(() => {
-    if (demo) setForegroundEnabled(false);
-  }, [demo]);
-  const updatePreferences = (next: AlertPreferences) => {
-    setPreferences(next);
-    void onPreferencesChange?.(next);
-  };
   const visible = useMemo(
     () => (preferences.enabled ? alerts.filter((alert) => !dismissed.includes(alert.id)) : []),
     [alerts, dismissed, preferences.enabled],
   );
-  const enableNotifications = async () => {
-    if (foregroundEnabled) {
-      setForegroundEnabled(false);
-      setNotificationMessage(
-        "Notificações desativadas nesta aba. A permissão do navegador permanece inalterada.",
-      );
-      return;
-    }
-    setNotificationBusy(true);
-    try {
-      const permission = await requestBrowserNotificationPermission();
-      if (permission === "unsupported") {
-        setNotificationMessage(
-          "Seu navegador não oferece notificações. A Central de alertas continua disponível.",
-        );
-        return;
-      }
-      if (permission !== "granted") {
-        setNotificationMessage(
-          "As notificações foram negadas. Libere a permissão nas configurações do navegador para tentar novamente.",
-        );
-        return;
-      }
-      setForegroundEnabled(true);
-      const delivered = deliverForegroundAlerts(visible, preferences, true);
-      setNotificationMessage(
-        delivered
-          ? `${delivered} alerta${delivered === 1 ? "" : "s"} enviado${delivered === 1 ? "" : "s"} nesta aba.`
-          : "Nenhum alerta novo para enviar.",
-      );
-    } finally {
-      setNotificationBusy(false);
-    }
-  };
+  const shown = visible.slice(0, ALERT_PAGE_SIZE);
+  const remaining = visible.length - shown.length;
+  useEffect(() => {
+    if (demo) return;
+    deliverForegroundAlerts(visible, preferences, browserNotificationStatus() === "granted");
+  }, [demo, visible, preferences]);
   return (
     <SectionCard
       title="Central de alertas"
@@ -103,112 +53,50 @@ export function AlertCenter({
       ) : !visible.length ? (
         <p>Nenhum alerta ativo no momento.</p>
       ) : (
-        <ul className="space-y-2">
-          {visible.map((alert) => (
-            <li key={alert.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-3">
-              <div className="min-w-0 flex-1">
-                <p className="break-words text-sm font-medium">{alert.title}</p>
-                <p className="break-words text-xs text-muted-foreground">{alert.reason}</p>
-              </div>
-              <Button asChild variant="outline" size="sm">
-                <Link to={alert.href} search={demo ? { mode: "demo" } : {}}>
-                  {alert.actionLabel}
-                </Link>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setDismissed((current) => [...current, alert.id])}
-              >
-                Dispensar
-              </Button>
-            </li>
-          ))}
-        </ul>
+        <>
+          <p className="mb-3 text-xs text-muted-foreground" role="status">
+            Mostrando {shown.length} de {visible.length}{" "}
+            {pluralize(visible.length, "alerta", "alertas")}
+            {remaining > 0 && ` · ${remaining} aguardando`}
+          </p>
+          <ul className="space-y-2">
+            {shown.map((alert) => (
+              <li key={alert.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-3">
+                <div className="min-w-0 flex-1">
+                  <p className="break-words text-sm font-medium">{alert.title}</p>
+                  <p className="break-words text-xs text-muted-foreground">{alert.reason}</p>
+                </div>
+                <Button asChild variant="outline" size="sm">
+                  <Link to={alert.href} search={demo ? { mode: "demo" } : {}}>
+                    {alert.actionLabel}
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDismissed((current) => [...current, alert.id])}
+                >
+                  Dispensar
+                </Button>
+              </li>
+            ))}
+          </ul>
+          {remaining > 0 && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Resolva ou dispense um alerta para ver o próximo.
+            </p>
+          )}
+        </>
       )}
-      <div className="mt-4 grid gap-2 border-t pt-3 text-xs">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={preferences.enabled}
-            onChange={(event) =>
-              updatePreferences({ ...preferences, enabled: event.target.checked })
-            }
-          />
-          Ativar alertas
-        </label>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={preferences.habitsEnabled}
-            onChange={(event) =>
-              updatePreferences({ ...preferences, habitsEnabled: event.target.checked })
-            }
-          />
-          Alertas de hábitos
-        </label>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={preferences.focusEnabled}
-            onChange={(event) =>
-              updatePreferences({ ...preferences, focusEnabled: event.target.checked })
-            }
-          />
-          Alertas de foco
-        </label>
-        <label className="grid gap-1 sm:grid-cols-[1fr_auto] sm:items-center">
-          Antecedência de prazo (dias)
-          <input
-            className="h-10 w-full rounded-md border bg-background px-3 sm:w-24"
-            type="number"
-            min={0}
-            max={30}
-            value={preferences.deadlineLeadDays}
-            aria-label="Antecedência de prazo em dias"
-            onChange={(event) =>
-              updatePreferences({
-                ...preferences,
-                deadlineLeadDays: Math.min(30, Math.max(0, Number(event.target.value) || 0)),
-              })
-            }
-          />
-        </label>
-        <label className="grid gap-1 sm:grid-cols-[1fr_auto] sm:items-center">
-          Horário do resumo diário
-          <input
-            className="h-10 w-full rounded-md border bg-background px-3 sm:w-32"
-            type="time"
-            value={preferences.dailySummaryTime}
-            aria-label="Horário do resumo diário"
-            onChange={(event) =>
-              updatePreferences({ ...preferences, dailySummaryTime: event.target.value })
-            }
-          />
-        </label>
-        {preferencesSaving && <p role="status">Salvando preferências…</p>}
-        {!demo && (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              className="min-h-11 justify-self-start"
-              disabled={!preferences.enabled || preferencesSaving || notificationBusy}
-              onClick={() => void enableNotifications()}
-            >
-              {notificationBusy
-                ? "Verificando permissão…"
-                : foregroundEnabled
-                  ? "Desativar notificações nesta aba"
-                  : "Ativar notificações nesta aba"}
-            </Button>
-            {notificationMessage && <p role="status">{notificationMessage}</p>}
-            {browserNotificationStatus() === "granted" && (
-              <p className="text-muted-foreground">Notificações desta aba estão ativas.</p>
-            )}
-          </>
-        )}
-      </div>
+      {!demo && (
+        <p className="mt-4 border-t pt-3 text-xs text-muted-foreground">
+          Ajuste quais alertas aparecem e as notificações desta aba em{" "}
+          <Link className="underline" to="/settings">
+            Configurações
+          </Link>
+          .
+        </p>
+      )}
     </SectionCard>
   );
 }
