@@ -30,7 +30,7 @@ As capturas a seguir registram as interfaces em ambiente real de validação (ar
 ### 1. Tela "Hoje" (Visão Geral e Prioridades)
 Visão consolidada das prioridades do dia, hábitos a cumprir e Central de Alertas integrada.
 <br>
-<img src="docs/IMAGEM 12 — tela “Hoje”.png" alt="Tela Hoje" width="700">
+<img src="docs/IMAGEM 01 — tela “Hoje”.png" alt="Tela Hoje" width="700">
 
 ---
 
@@ -55,6 +55,13 @@ Cronômetro monotarefa com persistência contínua, sobrevivência a recarregame
 
 ---
 
+### 5. Dashboard
+Cronômetro monotarefa com persistência contínua, sobrevivência a recarregamentos (F5) e consolidação automática de tempo por tarefa.
+<br>
+<img src="docs/IMAGEM 05 — Dashboard.png" alt="Tela Foco" width="700">
+
+---
+
 ### 5. Planejador do Dia com IA (Ciclo Completo)
 
 O Planejador do Dia analisa tarefas e hábitos, calcula o tempo útil e sugere uma distribuição equilibrada respeitando pausas e imprevistos:
@@ -62,29 +69,29 @@ O Planejador do Dia analisa tarefas e hábitos, calcula o tempo útil e sugere u
 #### 5A. Configuração de disponibilidade
 Definição do tempo disponível e parâmetros para o cálculo inteligente:
 <br>
-<img src="docs/IMAGEM 05A — “planejador do dia”.png" alt="Planejador do Dia - Configuração" width="700">
+<img src="docs/IMAGEM 06A — “planejador do dia”.png" alt="Planejador do Dia - Configuração" width="700">
 
 #### 5B. Sugestão gerada pela IA
 Distribuição inteligente de blocos de foco gerada pelo modelo de linguagem:
 <br>
-<img src="docs/IMAGEM 05B — “planejador do dia”.png" alt="Planejador do Dia - Sugestões de IA" width="700">
+<img src="docs/IMAGEM 06B — “planejador do dia”.png" alt="Planejador do Dia - Sugestões de IA" width="700">
 
 #### 5C. Revisão interativa
 Possibilidade de ajustar individualmente a minutagem sugerida antes da confirmação:
 <br>
-<img src="docs/IMAGEM 05C — “planejador do dia”.png" alt="Planejador do Dia - Revisão de Blocos" width="700">
+<img src="docs/IMAGEM 06C — “planejador do dia”.png" alt="Planejador do Dia - Revisão de Blocos" width="700">
 
 #### 5D. Aceite e consolidação
 Aplicação dos blocos aceitos com gravação direta no planejamento do dia:
 <br>
-<img src="docs/IMAGEM 05D — “planejador do dia”.png" alt="Planejador do Dia - Aplicação Concluída" width="700">
+<img src="docs/IMAGEM 06D — “planejador do dia”.png" alt="Planejador do Dia - Aplicação Concluída" width="700">
 
 ---
 
 ### 6. Modo Demonstração (Sem Cadastro)
 Acesso instantâneo a todas as telas com fixtures locais, sem necessidade de login:
 <br>
-<img src="docs/IMAGEM 06 — Modo demonstração.png" alt="Modo Demonstração" width="700">
+<img src="docs/IMAGEM 07 — Modo demonstração.png" alt="Modo Demonstração" width="700">
 
 ---
 
