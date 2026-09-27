@@ -13,7 +13,6 @@ import {
 } from "@/lib/category-limits";
 import { TaskDataContext, type TaskDataContextValue } from "./task-data-context";
 
-
 function readableError(error: unknown): string {
   const code = typeof error === "object" && error !== null && "code" in error ? error.code : "";
   const message =
@@ -34,14 +33,14 @@ function readableError(error: unknown): string {
   if (code === "23503")
     return "A categoria, projeto ou tarefa não está disponível para sua conta. Atualize os dados.";
   if (code === "23514") return "Confira os campos e os limites de categorias e duração estimada.";
-  if (code === "23502" || code === "22P02") return "Preencha os campos obrigatórios, como a categoria.";
+  if (code === "23502" || code === "22P02")
+    return "Preencha os campos obrigatórios, como a categoria.";
   if (code === "42501")
     return "Sem permissão para esta operação. Entre novamente e tente outra vez.";
   if (code === "42P01" || code === "PGRST205")
     return "Não foi possível carregar suas listas neste ambiente. Tente novamente mais tarde.";
   return "Não foi possível acessar seus dados. Verifique a conexão e tente novamente.";
 }
-
 
 /** Mounted with a user-specific key; no persisted records enter a shared query cache. */
 export function TaskDataProvider({ userId, children }: { userId: string; children: ReactNode }) {
@@ -173,7 +172,13 @@ export function TaskDataProvider({ userId, children }: { userId: string; childre
       });
       if (!validation.valid) return Promise.resolve(validation);
       return write(() =>
-        supabase.from("categories").delete().eq("user_id", userId).eq("id", id).select("id").single(),
+        supabase
+          .from("categories")
+          .delete()
+          .eq("user_id", userId)
+          .eq("id", id)
+          .select("id")
+          .single(),
       );
     },
     activateCategory: (id) => {

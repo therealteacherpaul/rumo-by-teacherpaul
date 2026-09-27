@@ -39,7 +39,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { CategoryManager } from "@/components/categories/CategoryManager";
 import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
 
-
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({
     meta: [
@@ -119,7 +118,6 @@ function SettingsPage() {
       </div>
     );
   }
-
 
   return (
     <div className="space-y-8">
