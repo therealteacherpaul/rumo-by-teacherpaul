@@ -15,10 +15,7 @@ import { AlertCenter } from "@/components/alerts/AlertCenter";
 import { buildAlerts } from "@/lib/alerts/alert-rules";
 import { useHabits } from "@/hooks/use-habits";
 import { loadFocusSessions, type FocusSession } from "@/lib/focus-repository";
-import {
-  loadAlertPreferences,
-  saveAlertPreferences,
-} from "@/lib/alerts/alert-preferences-repository";
+import { loadAlertPreferences } from "@/lib/alerts/alert-preferences-repository";
 import { defaultAlertPreferences, type AlertPreferences } from "@/lib/alerts/alert-types";
 
 type Priority = Tables<"priorities">;
@@ -38,7 +35,7 @@ export function AuthenticatedPriorities() {
   const [focusSessions, setFocusSessions] = useState<FocusSession[]>([]);
   const [auxiliaryError, setAuxiliaryError] = useState("");
   const [preferences, setPreferences] = useState<AlertPreferences>(defaultAlertPreferences);
-  const [preferencesSaving, setPreferencesSaving] = useState(false);
+
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
@@ -81,18 +78,6 @@ export function AuthenticatedPriorities() {
     void loadAlertData();
     return () => setFocusSessions([]);
   }, [loadAlertData]);
-  const updatePreferences = async (next: AlertPreferences) => {
-    if (!user) return;
-    setPreferences(next);
-    setPreferencesSaving(true);
-    try {
-      await saveAlertPreferences(user.id, next);
-    } catch {
-      setAuxiliaryError("Não foi possível salvar as preferências. Tente novamente.");
-    } finally {
-      setPreferencesSaving(false);
-    }
-  };
   const save = async () => {
     if (!user || !title.trim()) return setError("Informe o título da prioridade.");
     if (!editing && items.length >= 3)
@@ -265,8 +250,6 @@ export function AuthenticatedPriorities() {
         error={habits.error || auxiliaryError}
         onRetry={() => void Promise.all([habits.reload(), loadAlertData()])}
         preferences={preferences}
-        onPreferencesChange={updatePreferences}
-        preferencesSaving={preferencesSaving}
       />
       {prioritiesSection}
       <AuthenticatedDayPlanner priorities={items} date={date} unavailable={loadFailed} />
