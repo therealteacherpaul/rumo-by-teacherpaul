@@ -26,7 +26,9 @@ export const lovablePlanningProvider: PlanningProvider = {
   async generatePlan(input, signal) {
     signal.throwIfAborted();
     try {
-      return await generateDayPlan({ data: input, signal });
+      const result = (await generateDayPlan({ data: input, signal })) as Record<string, unknown>;
+      if (typeof result["error"] === "string") throw new Error(result["error"]);
+      return result as never;
     } catch (error) {
       if (signal.aborted) throw error;
       if (error instanceof DOMException && error.name === "AbortError") throw error;

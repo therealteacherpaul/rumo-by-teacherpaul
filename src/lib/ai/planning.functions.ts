@@ -95,6 +95,17 @@ export const generateDayPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((data: unknown) => inputSchema.parse(data))
   .handler(async ({ data }) => {
+    try {
+      return await runPlanner(data);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("[planner] failed", message);
+      const code = message.startsWith("planner_") ? message : "planner_unavailable";
+      return { error: code } as const;
+    }
+  });
+
+async function runPlanner(data: z.infer<typeof inputSchema>) {
     const apiKey = process.env["LOVABLE_API_KEY"];
     if (!apiKey) {
       console.error("[planner] missing LOVABLE_API_KEY");
@@ -105,6 +116,7 @@ export const generateDayPlan = createServerFn({ method: "POST" })
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
         "Lovable-API-Key": apiKey,
         "X-Lovable-AIG-SDK": "fetch",
       },
@@ -161,6 +173,15 @@ export const generateDayPlan = createServerFn({ method: "POST" })
       }
     }
 
+    const tail = buffer.trim();
+    if (tail.startsWith("data:")) {
+      try {
+        const event = JSON.parse(tail.slice(5).trim()) as { type?: string; delta?: string };
+        if (event.type === "response.output_text.delta" && typeof event.delta === "string") text += event.delta;
+      } catch {
+        /* ignore partial frame */
+      }
+    }
     if (!text.trim()) throw new Error("planner_invalid");
     let parsed: unknown;
     try {
@@ -169,4 +190,4 @@ export const generateDayPlan = createServerFn({ method: "POST" })
       throw new Error("planner_invalid");
     }
     return { ...(parsed as Record<string, unknown>), source: "ai" as const };
-  });
+  }
