@@ -37,6 +37,8 @@ import { useCategories } from "@/hooks/use-categories";
 import { useAppDataMode } from "@/hooks/use-app-data-mode";
 import { useAuth } from "@/hooks/use-auth";
 import { CategoryManager } from "@/components/categories/CategoryManager";
+import { AlertSettings } from "@/components/alerts/AlertSettings";
+
 import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
 
 export const Route = createFileRoute("/_app/settings")({
