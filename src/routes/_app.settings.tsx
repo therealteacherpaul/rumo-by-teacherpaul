@@ -100,6 +100,7 @@ function SettingsPage() {
     });
 
   if (mode === "authenticated") {
+    if (!user) return null;
     return (
       <div className="space-y-8">
         <PageHeader
@@ -107,10 +108,13 @@ function SettingsPage() {
           title="Configurações"
           description="Personalize o RUMO ao seu ritmo."
         />
-        <AuthenticatedCategoryStart />
+        <TaskDataProvider key={user.id} userId={user.id}>
+          <CategoryManager />
+        </TaskDataProvider>
       </div>
     );
   }
+
 
   return (
     <div className="space-y-8">
