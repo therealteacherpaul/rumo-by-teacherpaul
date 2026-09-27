@@ -82,8 +82,10 @@ const notificationItems = [
 
 function SettingsPage() {
   const mode = useAppDataMode();
+  const { user } = useAuth();
   const { categories, createCategory, renameCategory, activateCategory, deactivateCategory } =
     useCategories();
+
   const [newCategoryName, setNewCategoryName] = useState("");
   const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
   const [categoryMessage, setCategoryMessage] = useState("");
