@@ -35,7 +35,10 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCategories } from "@/hooks/use-categories";
 import { useAppDataMode } from "@/hooks/use-app-data-mode";
-import { AuthenticatedCategoryStart } from "@/components/settings/AuthenticatedCategoryStart";
+import { useAuth } from "@/hooks/use-auth";
+import { CategoryManager } from "@/components/categories/CategoryManager";
+import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
+
 
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({
