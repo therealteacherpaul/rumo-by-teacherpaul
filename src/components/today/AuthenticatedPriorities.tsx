@@ -18,7 +18,6 @@ import { loadFocusSessions, type FocusSession } from "@/lib/focus-repository";
 import { loadAlertPreferences } from "@/lib/alerts/alert-preferences-repository";
 import { defaultAlertPreferences, type AlertPreferences } from "@/lib/alerts/alert-types";
 
-
 type Priority = Tables<"priorities">;
 export function AuthenticatedPriorities() {
   const { user } = useAuth();
@@ -256,5 +255,4 @@ export function AuthenticatedPriorities() {
       <AuthenticatedDayPlanner priorities={items} date={date} unavailable={loadFailed} />
     </>
   );
-
 }

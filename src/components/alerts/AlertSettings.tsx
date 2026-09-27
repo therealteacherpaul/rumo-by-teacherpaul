@@ -111,7 +111,9 @@ export function AlertSettings() {
           <input
             type="checkbox"
             checked={preferences.focusEnabled}
-            onChange={(event) => void update({ ...preferences, focusEnabled: event.target.checked })}
+            onChange={(event) =>
+              void update({ ...preferences, focusEnabled: event.target.checked })
+            }
           />
           Alertas de foco
         </label>
@@ -139,7 +141,9 @@ export function AlertSettings() {
             type="time"
             value={preferences.dailySummaryTime}
             aria-label="Horário do resumo diário"
-            onChange={(event) => void update({ ...preferences, dailySummaryTime: event.target.value })}
+            onChange={(event) =>
+              void update({ ...preferences, dailySummaryTime: event.target.value })
+            }
           />
         </label>
         {saving && <p role="status">Salvando preferências…</p>}

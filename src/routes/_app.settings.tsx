@@ -118,7 +118,6 @@ function SettingsPage() {
           <CategoryManager />
         </TaskDataProvider>
         <AlertSettings />
-
       </div>
     );
   }

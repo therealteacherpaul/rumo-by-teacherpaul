@@ -37,7 +37,6 @@ test("alert rules define deterministic, deduplicated keys and demo-safe links", 
   assert.match(settings, /Alertas de foco/);
 });
 
-
 test("alert preferences are independent defaults for each user instance", async () => {
   const source = await readFile(
     new URL("../src/lib/alerts/alert-types.ts", import.meta.url),

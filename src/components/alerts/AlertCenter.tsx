@@ -61,7 +61,10 @@ export function AlertCenter({
           </p>
           <ul className="space-y-2">
             {shown.map((alert) => (
-              <li key={alert.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-3">
+              <li
+                key={alert.id}
+                className="flex flex-wrap items-center gap-2 rounded-lg border p-3"
+              >
                 <div className="min-w-0 flex-1">
                   <p className="break-words text-sm font-medium">{alert.title}</p>
                   <p className="break-words text-xs text-muted-foreground">{alert.reason}</p>
