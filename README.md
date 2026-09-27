@@ -58,7 +58,7 @@ Cronômetro monotarefa com persistência contínua, sobrevivência a recarregame
 ### 5. Dashboard
 Dashboard de acompanhamento
 <br>
-<img src="docs/IMAGEM 05 — Dashboard.png" alt="Dashboard" width="700">
+<img src="docs/IMAGEM 05 - Dashboard.png" alt="Dashboard" width="700">
 
 ---
 
