@@ -4,7 +4,15 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import type { TaskData, WriteResult } from "@/lib/task-data";
+import {
+  USER_CATEGORY_LIMITS,
+  validateCategoryActivation,
+  validateCategoryCreation,
+  validateCategoryDeletion,
+  validateCategoryRename,
+} from "@/lib/category-limits";
 import { TaskDataContext, type TaskDataContextValue } from "./task-data-context";
+
 
 function readableError(error: unknown): string {
   const code = typeof error === "object" && error !== null && "code" in error ? error.code : "";
