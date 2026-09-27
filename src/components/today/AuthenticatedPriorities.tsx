@@ -79,18 +79,6 @@ export function AuthenticatedPriorities() {
     void loadAlertData();
     return () => setFocusSessions([]);
   }, [loadAlertData]);
-  const updatePreferences = async (next: AlertPreferences) => {
-    if (!user) return;
-    setPreferences(next);
-    setPreferencesSaving(true);
-    try {
-      await saveAlertPreferences(user.id, next);
-    } catch {
-      setAuxiliaryError("Não foi possível salvar as preferências. Tente novamente.");
-    } finally {
-      setPreferencesSaving(false);
-    }
-  };
   const save = async () => {
     if (!user || !title.trim()) return setError("Informe o título da prioridade.");
     if (!editing && items.length >= 3)
