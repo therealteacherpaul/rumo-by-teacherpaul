@@ -14,6 +14,7 @@ import { AuthenticatedDayPlanner } from "@/components/planning/AuthenticatedDayP
 import { AlertCenter } from "@/components/alerts/AlertCenter";
 import { buildAlerts } from "@/lib/alerts/alert-rules";
 import { useHabits } from "@/hooks/use-habits";
+import { habitOccursOnDate } from "@/lib/habit-data";
 import { loadFocusSessions, type FocusSession } from "@/lib/focus-repository";
 import { loadAlertPreferences } from "@/lib/alerts/alert-preferences-repository";
 import { defaultAlertPreferences, type AlertPreferences } from "@/lib/alerts/alert-types";
@@ -231,10 +232,16 @@ export function AuthenticatedPriorities() {
       </Link>
     </SectionCard>
   );
+  const habitDate = new Date().toLocaleDateString("en-CA");
   const alerts = buildAlerts({
     tasks: taskData.tasks,
     priorities: items,
-    habits: habits.activeHabits,
+    date: habitDate,
+    habits: habits.activeHabits.filter(
+      (habit) =>
+        habitOccursOnDate(habit, habitDate) &&
+        habits.getHabitStatus(habit, habitDate) === "nao_registrado",
+    ),
     focus: focusSessions.filter((session) => {
       if (!session.task_id) return true;
       const task = taskData.tasks.find((candidate) => candidate.id === session.task_id);
