@@ -15,11 +15,9 @@ import { AlertCenter } from "@/components/alerts/AlertCenter";
 import { buildAlerts } from "@/lib/alerts/alert-rules";
 import { useHabits } from "@/hooks/use-habits";
 import { loadFocusSessions, type FocusSession } from "@/lib/focus-repository";
-import {
-  loadAlertPreferences,
-  saveAlertPreferences,
-} from "@/lib/alerts/alert-preferences-repository";
+import { loadAlertPreferences } from "@/lib/alerts/alert-preferences-repository";
 import { defaultAlertPreferences, type AlertPreferences } from "@/lib/alerts/alert-types";
+
 
 type Priority = Tables<"priorities">;
 export function AuthenticatedPriorities() {
