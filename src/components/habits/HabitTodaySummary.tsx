@@ -23,12 +23,14 @@ const statusLabels: Record<HabitStatus, string> = {
   em_progresso: "Em progresso",
   feito: "Feito",
   modo_leve: "Modo leve",
+  nao_feito: "Não feito",
 };
 const statusVariants: Record<HabitStatus, "default" | "secondary" | "outline"> = {
   nao_registrado: "outline",
   em_progresso: "secondary",
   feito: "default",
   modo_leve: "secondary",
+  nao_feito: "outline",
 };
 
 function formatFrequency(frequency: HabitFrequency) {
@@ -147,9 +149,21 @@ export function HabitTodaySummary() {
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
           {habits.slice(0, MAX_QUICK_HABITS).map((habit) => {
             const status = getHabitStatus(habit, date);
-            const hasCheckIn = checkIns.some(
+            const current = checkIns.find(
               (item) => item.habitId === habit.id && item.date === date,
             );
+            const hasCheckIn = Boolean(current);
+            const save = async (value: number, text: string) => {
+              const minimum = habit.minimumTarget?.target ?? 0;
+              const result = await recordCheckIn({
+                habitId: habit.id,
+                date,
+                value,
+                completed: value >= habit.target.target,
+                mode: value < habit.target.target && minimum > 0 && value >= minimum ? "leve" : "principal",
+              });
+              setMessage(result.valid ? text : result.reason);
+            };
             return (
               <QuickHabit
                 key={habit.id}
@@ -159,6 +173,13 @@ export function HabitTodaySummary() {
                 hasCheckIn={hasCheckIn}
                 onComplete={() => updateCheckIn(habit, "principal")}
                 {...(habit.minimumTarget ? { onLight: () => updateCheckIn(habit, "leve") } : {})}
+                {...(habitIncrementStep(habit) !== null
+                  ? {
+                      onIncrement: () =>
+                        save((current?.value ?? 0) + 1, `+1 em “${habit.name}”.`),
+                    }
+                  : {})}
+                onSkip={() => save(0, `“${habit.name}” dispensado hoje.`)}
                 onClear={async () => {
                   const result = await clearCheckIn(habit.id, date);
                   setMessage(result.valid ? `“${habit.name}” reaberto para hoje.` : result.reason);
@@ -191,6 +212,8 @@ function QuickHabit({
   hasCheckIn,
   onComplete,
   onLight,
+  onIncrement,
+  onSkip,
   onClear,
 }: {
   habit: Habit;
@@ -199,6 +222,8 @@ function QuickHabit({
   hasCheckIn: boolean;
   onComplete: () => void;
   onLight?: (() => void) | undefined;
+  onIncrement?: (() => void) | undefined;
+  onSkip: () => void;
   onClear: () => void;
 }) {
   return (
@@ -220,9 +245,21 @@ function QuickHabit({
         <div className="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-muted">
           <div className="h-full rounded-full bg-gold" style={{ width: `${progress}%` }} />
         </div>
-        <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">{progress}%</span>
+        <span className="shrink-0 text-xs font-medium tabular-nums">{progress}%</span>
       </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
+        {onIncrement && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="h-8 px-2.5 text-xs"
+            onClick={onIncrement}
+            aria-label={`Adicionar 1 em ${habit.name}`}
+          >
+            +1
+          </Button>
+        )}
         <Button
           type="button"
           size="sm"
@@ -244,6 +281,18 @@ function QuickHabit({
           >
             <Minus className="mr-1 size-3.5" aria-hidden />
             Leve
+          </Button>
+        )}
+        {status !== "nao_feito" && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2.5 text-xs"
+            onClick={onSkip}
+            aria-label={`Dispensar ${habit.name} hoje`}
+          >
+            Dispensar
           </Button>
         )}
         <Button
