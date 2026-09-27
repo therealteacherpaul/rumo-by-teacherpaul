@@ -35,7 +35,9 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCategories } from "@/hooks/use-categories";
 import { useAppDataMode } from "@/hooks/use-app-data-mode";
-import { AuthenticatedCategoryStart } from "@/components/settings/AuthenticatedCategoryStart";
+import { useAuth } from "@/hooks/use-auth";
+import { CategoryManager } from "@/components/categories/CategoryManager";
+import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
 
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({
@@ -79,8 +81,10 @@ const notificationItems = [
 
 function SettingsPage() {
   const mode = useAppDataMode();
+  const { user } = useAuth();
   const { categories, createCategory, renameCategory, activateCategory, deactivateCategory } =
     useCategories();
+
   const [newCategoryName, setNewCategoryName] = useState("");
   const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
   const [categoryMessage, setCategoryMessage] = useState("");
@@ -100,6 +104,7 @@ function SettingsPage() {
     });
 
   if (mode === "authenticated") {
+    if (!user) return null;
     return (
       <div className="space-y-8">
         <PageHeader
@@ -107,7 +112,9 @@ function SettingsPage() {
           title="Configurações"
           description="Personalize o RUMO ao seu ritmo."
         />
-        <AuthenticatedCategoryStart />
+        <TaskDataProvider key={user.id} userId={user.id}>
+          <CategoryManager />
+        </TaskDataProvider>
       </div>
     );
   }

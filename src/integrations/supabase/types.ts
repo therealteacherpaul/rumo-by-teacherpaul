@@ -55,7 +55,7 @@ export type Database = {
           id: string
           kind: string
           name: string
-          slot: number
+          slot: number | null
           source: string
           updated_at: string
           user_id: string
@@ -67,7 +67,7 @@ export type Database = {
           id?: string
           kind?: string
           name: string
-          slot: number
+          slot?: number | null
           source?: string
           updated_at?: string
           user_id: string
@@ -79,7 +79,7 @@ export type Database = {
           id?: string
           kind?: string
           name?: string
-          slot?: number
+          slot?: number | null
           source?: string
           updated_at?: string
           user_id?: string
