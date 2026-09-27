@@ -130,36 +130,56 @@ export function TaskDataProvider({ userId, children }: { userId: string; childre
     pending: pending || loading || Boolean(error),
     saving: pending,
     createCategory: (name) => {
-      if (!name.trim() || name.trim().length > 100)
-        return Promise.resolve({
-          valid: false,
-          reason: "Informe um nome de categoria com até 100 caracteres.",
-        });
-      if (
-        data.categories.some(
-          (category) =>
-            category.name.trim().toLocaleLowerCase() === name.trim().toLocaleLowerCase(),
-        )
-      )
-        return Promise.resolve({ valid: false, reason: "Já existe uma categoria com esse nome." });
-      const slot = [1, 2, 3, 4].find(
-        (position) => !data.categories.some((category) => category.slot === position),
-      );
-      if (!slot)
-        return Promise.resolve({
-          valid: false,
-          reason: "O limite de 4 categorias personalizadas foi atingido.",
-        });
+      const validation = validateCategoryCreation(data.categories, name);
+      if (!validation.valid) return Promise.resolve(validation);
       return write(() =>
         supabase
           .from("categories")
-          .insert({ user_id: userId, name: name.trim(), slot })
+          .insert({ user_id: userId, name: name.trim() })
           .select("id")
           .single(),
       );
     },
-    activateCategory: (id) =>
-      write(() =>
+    renameCategory: (id, name) => {
+      const validation = validateCategoryRename(data.categories, id, name);
+      if (!validation.valid) return Promise.resolve(validation);
+      return write(() =>
+        supabase
+          .from("categories")
+          .update({ name: name.trim() })
+          .eq("user_id", userId)
+          .eq("id", id)
+          .select("id")
+          .single(),
+      );
+    },
+    setCategoryActive: (id, active) => {
+      const validation = validateCategoryActivation(data.categories, id, active);
+      if (!validation.valid) return Promise.resolve(validation);
+      return write(() =>
+        supabase
+          .from("categories")
+          .update({ active })
+          .eq("user_id", userId)
+          .eq("id", id)
+          .select("id")
+          .single(),
+      );
+    },
+    deleteCategory: (id) => {
+      const validation = validateCategoryDeletion(data.categories, id, {
+        tasks: data.tasks.filter((task) => task.category_id === id).length,
+        projects: data.projects.filter((project) => project.category_id === id).length,
+      });
+      if (!validation.valid) return Promise.resolve(validation);
+      return write(() =>
+        supabase.from("categories").delete().eq("user_id", userId).eq("id", id).select("id").single(),
+      );
+    },
+    activateCategory: (id) => {
+      const validation = validateCategoryActivation(data.categories, id, true);
+      if (!validation.valid) return Promise.resolve(validation);
+      return write(() =>
         supabase
           .from("categories")
           .update({ active: true })
@@ -167,7 +187,9 @@ export function TaskDataProvider({ userId, children }: { userId: string; childre
           .eq("id", id)
           .select("id")
           .single(),
-      ),
+      );
+    },
+
     saveProject: (name, id) => {
       if (!name.trim() || name.trim().length > 150)
         return Promise.resolve({
