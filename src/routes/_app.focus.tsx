@@ -433,6 +433,11 @@ function FocusTimer({
             <p className="mt-3 max-w-xs break-words text-center text-sm text-muted-foreground">
               {selected ? selected.title : "Nenhuma tarefa selecionada"}
             </p>
+            {carriedMinutes > 0 ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {carriedMinutes} min já feitos hoje somados a este bloco
+              </p>
+            ) : null}
             <Progress
               value={
                 duration > 0 ? ((duration * 60 - remainingSeconds) / (duration * 60)) * 100 : 0
