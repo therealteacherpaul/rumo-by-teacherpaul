@@ -29,6 +29,10 @@ import { useTaskData } from "@/hooks/use-task-data";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { useHabits } from "@/hooks/use-habits";
+import { habitOccursOnDate } from "@/lib/habit-data";
+import { loadFocusSessions } from "@/lib/focus-repository";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({
@@ -291,6 +295,72 @@ function DashboardPage() {
 
 function AuthenticatedDashboard() {
   const data = useTaskData();
+  const { user } = useAuth();
+  const habits = useHabits();
+  const [focusMinutes, setFocusMinutes] = useState<number | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    const since = new Date(Date.now() - 7 * 86_400_000).toISOString();
+    loadFocusSessions(user.id)
+      .then((rows) => {
+        if (!alive) return;
+        setFocusMinutes(
+          rows
+            .filter((row) => row.started_at >= since)
+            .reduce((total, row) => total + (row.actual_minutes ?? 0), 0),
+        );
+      })
+      .catch(() => alive && setFocusMinutes(-1));
+    return () => {
+      alive = false;
+    };
+  }, [user]);
+
+  const today = new Date().toLocaleDateString("en-CA");
+  const todayHabits = habits.activeHabits.filter((h) => habitOccursOnDate(h, today));
+  const doneToday = todayHabits.filter((h) => {
+    const s = habits.getHabitStatus(h, today);
+    return s === "feito" || s === "modo_leve";
+  }).length;
+  const habitPercent = todayHabits.length
+    ? Math.round(
+        todayHabits.reduce((t, h) => t + habits.getHabitProgress(h, today), 0) /
+          todayHabits.length,
+      )
+    : 0;
+
+  const cards: { label: string; value: string; hint: string; progress?: number }[] = [
+    {
+      label: "Tarefas concluídas",
+      value: String(
+        data.tasks.filter((task) => task.status === "Concluída" && !task.archived).length,
+      ),
+      hint: "no total",
+    },
+    {
+      label: "Projetos ativos",
+      value: String(data.projects.filter((project) => project.active).length),
+      hint: "em andamento",
+    },
+    {
+      label: "Tempo de foco",
+      value:
+        focusMinutes === null
+          ? "…"
+          : focusMinutes < 0
+            ? "Indisponível"
+            : formatDurationHours(focusMinutes / 60),
+      hint: "últimos 7 dias",
+    },
+    {
+      label: "Hábitos hoje",
+      value: habits.loading ? "…" : `${doneToday}/${todayHabits.length}`,
+      hint: `${habitPercent}% de conclusão média`,
+      progress: habitPercent,
+    },
+  ];
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -298,31 +368,35 @@ function AuthenticatedDashboard() {
         title="Dashboard"
         description="Resumo dos seus dados atuais."
       />
-      <SectionCard
-        title="Tarefas e projetos"
-        description="Contagens da sua conta. Foco e hábitos ainda não têm histórico persistente integrado."
-      >
+      <SectionCard title="Visão geral" description="Números reais da sua conta.">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            [
-              "Tarefas concluídas",
-              String(
-                data.tasks.filter((task) => task.status === "Concluída" && !task.archived).length,
-              ),
-            ],
-            ["Projetos ativos", String(data.projects.filter((project) => project.active).length)],
-            ["Tempo de foco", "Não disponível"],
-            ["Hábitos acompanhados", "Não disponível"],
-          ].map(([label, value]) => (
-            <div key={label} className="rounded-lg border border-border/70 p-4">
-              <p className="text-xs text-muted-foreground">{label}</p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
+          {cards.map((card) => (
+            <div key={card.label} className="rounded-lg border border-border/70 p-4">
+              <p className="text-xs text-muted-foreground">{card.label}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums">{card.value}</p>
+              {typeof card.progress === "number" && (
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-gold"
+                    style={{ width: `${card.progress}%` }}
+                  />
+                </div>
+              )}
+              <p className="mt-2 text-xs text-muted-foreground">{card.hint}</p>
             </div>
           ))}
         </div>
-        <Button asChild className="mt-5">
-          <Link to="/tasks">Ver tarefas</Link>
-        </Button>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Button asChild>
+            <Link to="/tasks">Ver tarefas</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/habits">Ver hábitos</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/focus">Ir para o foco</Link>
+          </Button>
+        </div>
       </SectionCard>
     </div>
   );

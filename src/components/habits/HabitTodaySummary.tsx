@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useAppDataMode } from "@/hooks/use-app-data-mode";
 import { useHabits } from "@/hooks/use-habits";
 import {
+  habitIncrementStep,
   habitOccursOnDate,
   type Habit,
   type HabitFrequency,
