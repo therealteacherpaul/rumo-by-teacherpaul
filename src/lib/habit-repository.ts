@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import type { Habit, HabitCheckIn, HabitFrequency, HabitTarget } from "./habit-data";
+import { pastOccurrenceDates } from "./habit-data";
 
 export interface HabitRepository {
   load(userId: string): Promise<{ habits: Habit[]; checkIns: HabitCheckIn[] }>;
@@ -85,6 +86,30 @@ export const habitRepository: HabitRepository = {
         })),
       );
       if (rows.length < 500) break;
+    }
+    // Dias encerrados sem registro viram "não feito" (valor 0). Nunca sobrescreve registros.
+    const today = new Date().toLocaleDateString("en-CA");
+    const missing: TablesInsert<"habit_check_ins">[] = [];
+    for (const habit of habits.filter((h) => h.active)) {
+      for (const date of pastOccurrenceDates(habit, today)) {
+        if (!checkIns.some((c) => c.habitId === habit.id && c.date === date))
+          missing.push({ habit_id: habit.id, date, value: 0, mode: "principal" });
+      }
+    }
+    if (missing.length) {
+      const result = await supabase
+        .from("habit_check_ins")
+        .upsert(missing, { onConflict: "user_id,habit_id,date", ignoreDuplicates: true });
+      if (!result.error)
+        checkIns.push(
+          ...missing.map((m) => ({
+            habitId: m.habit_id,
+            date: m.date,
+            value: 0,
+            mode: "principal" as const,
+            completed: false,
+          })),
+        );
     }
     return { habits, checkIns };
   },

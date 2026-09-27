@@ -37,7 +37,7 @@ export type HabitCheckIn = {
   mode: "principal" | "leve";
 };
 
-export type HabitStatus = "nao_registrado" | "em_progresso" | "feito" | "modo_leve";
+export type HabitStatus = "nao_registrado" | "em_progresso" | "feito" | "modo_leve" | "nao_feito";
 
 export type HabitValidation = { valid: true } | { valid: false; reason: string };
 
@@ -290,8 +290,27 @@ export function habitProgress(value: number, target: number): number {
 }
 
 export function habitCheckInStatus(habit: Habit, checkIn?: HabitCheckIn): HabitStatus {
-  if (!checkIn || !Number.isFinite(checkIn.value) || checkIn.value <= 0) return "nao_registrado";
+  if (!checkIn || !Number.isFinite(checkIn.value)) return "nao_registrado";
+  // Registro explícito com valor 0 = dispensado hoje ou dia encerrado sem registro.
+  if (checkIn.value <= 0) return "nao_feito";
   if (checkIn.value >= habit.target.target) return "feito";
   if (habit.minimumTarget && checkIn.value >= habit.minimumTarget.target) return "modo_leve";
   return "em_progresso";
+}
+
+/** Passo do botão "+1": só para hábitos contáveis (quantidade ou ocorrências). */
+export const habitIncrementStep = (habit: Habit): number | null =>
+  habit.target.type === "durationMin" ? null : 1;
+
+/** Datas (YYYY-MM-DD) anteriores a `today`, dentro de `lookbackDays`, em que o hábito ocorria. */
+export function pastOccurrenceDates(habit: Habit, today: string, lookbackDays = 30): string[] {
+  if (!validateHabitDate(today).valid) return [];
+  const out: string[] = [];
+  const base = Date.parse(`${today}T00:00:00Z`);
+  for (let i = 1; i <= lookbackDays; i++) {
+    const date = new Date(base - i * 86_400_000).toISOString().slice(0, 10);
+    if (date < habit.startDate) break;
+    if (habitOccursOnDate(habit, date)) out.push(date);
+  }
+  return out;
 }

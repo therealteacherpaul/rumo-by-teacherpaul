@@ -1,7 +1,7 @@
 import { useAppDataMode } from "@/hooks/use-app-data-mode";
-import { habitOccursOnDate } from "@/lib/habit-data";
+import { habitIncrementStep, habitOccursOnDate } from "@/lib/habit-data";
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Edit3, ToggleLeft, ToggleRight, Waves, X } from "lucide-react";
+import { Ban, Check, Edit3, Plus, ToggleLeft, ToggleRight, Waves, X } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { DemoNotice } from "@/components/common/DemoBadge";
@@ -49,6 +49,7 @@ const statusLabels = {
   em_progresso: "Em progresso",
   feito: "Feito",
   modo_leve: "Modo leve",
+  nao_feito: "Não feito",
 } as const;
 
 const statusVariants = {
@@ -56,6 +57,7 @@ const statusVariants = {
   em_progresso: "secondary",
   feito: "default",
   modo_leve: "secondary",
+  nao_feito: "outline",
 } as const;
 
 function formatFrequency(frequency: HabitFrequency) {
@@ -289,6 +291,21 @@ function HabitsPage() {
                     setMessage(result.valid ? "Hábito desativado." : result.reason);
                   }}
                   onValue={(value) => setHabitValue(habit, value)}
+                  onIncrement={() => setHabitValue(habit, String((checkIn?.value ?? 0) + 1))}
+                  onSkip={async () => {
+                    const result = await recordCheckIn({
+                      habitId: habit.id,
+                      date,
+                      value: 0,
+                      completed: false,
+                      mode: "principal",
+                    });
+                    setMessage(
+                      result.valid
+                        ? `“${habit.name}” dispensado hoje — registrado como não feito.`
+                        : result.reason,
+                    );
+                  }}
                   onClear={async () => {
                     const result = await clearCheckIn(habit.id, date);
                     setMessage(
@@ -545,6 +562,8 @@ function HabitCard({
   onEdit,
   onToggle,
   onValue,
+  onIncrement,
+  onSkip,
   onClear,
   editButtonRef,
 }: {
@@ -556,10 +575,20 @@ function HabitCard({
   onEdit: () => void;
   onToggle: () => void;
   onValue: (value: string) => void;
+  onIncrement: () => void;
+  onSkip: () => void;
   onClear: () => void;
   editButtonRef: (element: HTMLButtonElement | null) => void;
 }) {
   const [value, setValue] = useState(checkIn ? String(checkIn.value) : "");
+  const step = habitIncrementStep(habit);
+  const current = checkIn?.value ?? 0;
+  const unit =
+    habit.target.type === "durationMin"
+      ? "min"
+      : habit.target.type === "quantity"
+        ? habit.target.unit
+        : "";
   return (
     <article className="rounded-xl border border-border/80 p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -570,12 +599,17 @@ function HabitCard({
             {habit.minimumTarget ? ` · Leve: ${formatTarget(habit.minimumTarget)}` : ""}
           </p>
         </div>
-        <Badge variant={statusVariants[status]}>{statusLabels[status]}</Badge>
+        <div className="flex items-center gap-2">
+          <span className="font-display text-2xl font-semibold tabular-nums">{progress}%</span>
+          <Badge variant={statusVariants[status]}>{statusLabels[status]}</Badge>
+        </div>
       </div>
       <div className="mt-4">
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Progresso do dia</span>
-          <span>{progress}%</span>
+          <span>
+            {current} de {habit.target.target} {unit}
+          </span>
+          <span>{progress}% concluído</span>
         </div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
           <div
@@ -587,6 +621,11 @@ function HabitCard({
       {status === "modo_leve" && (
         <p className="mt-3 text-sm text-success">
           Você cumpriu sua meta mínima. Isso também conta.
+        </p>
+      )}
+      {status === "nao_feito" && (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Registrado como não feito. Tudo bem — amanhã é outro dia.
         </p>
       )}
       <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
@@ -610,6 +649,16 @@ function HabitCard({
           />
         </div>
         <div className="flex flex-wrap gap-2">
+          {step !== null && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onIncrement}
+              aria-label={`Adicionar 1 em ${habit.name}`}
+            >
+              <Plus className="mr-1 size-4" aria-hidden />1
+            </Button>
+          )}
           <Button
             type="button"
             onClick={() => onValue(value)}
@@ -619,6 +668,17 @@ function HabitCard({
             <Check className="mr-2 size-4" aria-hidden />
             Registrar
           </Button>
+          {status !== "nao_feito" && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onSkip}
+              aria-label={`Dispensar ${habit.name} hoje`}
+            >
+              <Ban className="mr-2 size-4" aria-hidden />
+              Dispensar hoje
+            </Button>
+          )}
           {checkIn && (
             <Button
               type="button"
