@@ -23,7 +23,11 @@ import { focusSessions, tasks as demoTasks } from "@/lib/demo-data";
 import { TaskDataProvider } from "@/components/tasks/TaskDataProvider";
 import { useTaskData } from "@/hooks/use-task-data";
 import { useAuth } from "@/hooks/use-auth";
-import { loadFocusSessions, saveFocusSession, type FocusSession } from "@/lib/focus-repository";
+import {
+  accumulateFocusSession,
+  loadFocusSessions,
+  type FocusSession,
+} from "@/lib/focus-repository";
 
 export const Route = createFileRoute("/_app/focus")({
   head: () => ({
@@ -67,7 +71,7 @@ async function recoverInterruptedFocus(userId: string) {
   const actualMinutes = Math.floor(checkpoint.elapsedSec / 60);
   if (actualMinutes >= 1 && checkpoint.taskId) {
     const started = new Date(checkpoint.startedAt).getTime();
-    await saveFocusSession({
+    await accumulateFocusSession(userId, {
       task_id: checkpoint.taskId,
       started_at: checkpoint.startedAt,
       ended_at: new Date(started + checkpoint.elapsedSec * 1000).toISOString(),
