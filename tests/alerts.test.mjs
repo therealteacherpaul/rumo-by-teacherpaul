@@ -20,11 +20,23 @@ test("alert rules define deterministic, deduplicated keys and demo-safe links", 
   );
   assert.match(ui, /search=\{demo \? \{ mode: "demo" \} : \{\}\}/);
   assert.match(ui, /dismissed/);
-  assert.match(ui, /Ativar notificações nesta aba/);
-  assert.match(ui, /Desativar notificações nesta aba/);
-  assert.match(ui, /notificationBusy/);
-  assert.match(ui, /!demo/);
+  assert.match(ui, /ALERT_PAGE_SIZE = 3/);
+  assert.match(ui, /visible\.slice\(0, ALERT_PAGE_SIZE\)/);
+  assert.match(ui, /Mostrando \{shown\.length\} de \{visible\.length\}/);
+  assert.doesNotMatch(ui, /Ativar notificações nesta aba/);
+  assert.doesNotMatch(ui, /type="checkbox"/);
+  const settings = await readFile(
+    new URL("../src/components/alerts/AlertSettings.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(settings, /Ativar notificações nesta aba/);
+  assert.match(settings, /Desativar notificações nesta aba/);
+  assert.match(settings, /notificationBusy/);
+  assert.match(settings, /Ativar alertas/);
+  assert.match(settings, /Alertas de hábitos/);
+  assert.match(settings, /Alertas de foco/);
 });
+
 
 test("alert preferences are independent defaults for each user instance", async () => {
   const source = await readFile(
