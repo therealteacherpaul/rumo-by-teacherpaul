@@ -27,10 +27,11 @@ export type CategoryId = SystemCategoryId | `custom-${string}`;
 export type CategorySource = "system" | "user";
 
 export const CATEGORY_LIMITS = {
-  total: 20,
-  active: 16,
-  userCreated: 4,
+  total: 30,
+  active: 20,
+  userCreated: 30,
 } as const;
+
 
 export type CategoryValidation = { valid: true } | { valid: false; reason: string };
 
