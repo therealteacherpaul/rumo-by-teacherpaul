@@ -36,7 +36,7 @@ export function AuthenticatedPriorities() {
   const [focusSessions, setFocusSessions] = useState<FocusSession[]>([]);
   const [auxiliaryError, setAuxiliaryError] = useState("");
   const [preferences, setPreferences] = useState<AlertPreferences>(defaultAlertPreferences);
-  const [preferencesSaving, setPreferencesSaving] = useState(false);
+
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
