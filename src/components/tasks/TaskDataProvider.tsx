@@ -8,6 +8,19 @@ import { TaskDataContext, type TaskDataContextValue } from "./task-data-context"
 
 function readableError(error: unknown): string {
   const code = typeof error === "object" && error !== null && "code" in error ? error.code : "";
+  const message =
+    typeof error === "object" && error !== null && "message" in error
+      ? String((error as { message: unknown }).message)
+      : "";
+  // Database guards protect the per-account category limits and task integrity.
+  if (message.includes("Active category limit"))
+    return `Limite de ${USER_CATEGORY_LIMITS.active} categorias ativas atingido. Arquive uma categoria antes de continuar.`;
+  if (message.includes("Category total limit"))
+    return `Limite de ${USER_CATEGORY_LIMITS.total} categorias no total atingido. Exclua uma categoria arquivada antes de continuar.`;
+  if (message.includes("Archive the category"))
+    return "Arquive a categoria antes de excluí-la definitivamente.";
+  if (message.includes("Category still has"))
+    return "Esta categoria ainda tem itens vinculados. Reative-a ou mova esses itens antes de excluir. Nenhuma tarefa é apagada.";
   if (code === "23505")
     return "Este nome ou posição já está em uso. Atualize os dados e tente novamente.";
   if (code === "23503")
@@ -20,6 +33,7 @@ function readableError(error: unknown): string {
     return "Não foi possível carregar suas listas neste ambiente. Tente novamente mais tarde.";
   return "Não foi possível acessar seus dados. Verifique a conexão e tente novamente.";
 }
+
 
 /** Mounted with a user-specific key; no persisted records enter a shared query cache. */
 export function TaskDataProvider({ userId, children }: { userId: string; children: ReactNode }) {
