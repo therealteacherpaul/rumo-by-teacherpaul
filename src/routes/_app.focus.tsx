@@ -349,9 +349,7 @@ function FocusTimer({
     }
     void persistProgress("completed", 0)
       .then(() => setFocusMessage("Bloco concluído e salvo no histórico."))
-      .catch(() =>
-        setFocusMessage("Bloco concluído; o tempo será salvo quando a conexão voltar."),
-      );
+      .catch(() => setFocusMessage("Bloco concluído; o tempo será salvo quando a conexão voltar."));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remainingSeconds, hasStarted]);
 
