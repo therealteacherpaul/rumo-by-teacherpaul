@@ -3,16 +3,20 @@ import { useTaskData } from "@/hooks/use-task-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SectionCard } from "@/components/common/SectionCard";
+import { USER_CATEGORY_LIMITS, countCategories } from "@/lib/category-limits";
 
-// Only the small prerequisite needed by a new account to create its first task.
+// Quick creation and restore next to the task list; full management lives in Configurações.
 export function CategoryCreator() {
-  const { createCategory, activateCategory, categories, pending } = useTaskData();
+  const { createCategory, setCategoryActive, categories, pending } = useTaskData();
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
+  const counts = countCategories(categories);
+  const full =
+    counts.total >= USER_CATEGORY_LIMITS.total || counts.active >= USER_CATEGORY_LIMITS.active;
   return (
     <SectionCard
       title="Categorias de tarefas"
-      description="Crie uma categoria para organizar suas tarefas. Até quatro categorias personalizadas."
+      description={`Organize suas tarefas por área. ${counts.active} de ${USER_CATEGORY_LIMITS.active} ativas · ${counts.total} de ${USER_CATEGORY_LIMITS.total} no total.`}
     >
       <form
         className="flex flex-wrap gap-2"
@@ -32,7 +36,7 @@ export function CategoryCreator() {
           value={name}
           onChange={(event) => setName(event.target.value)}
         />
-        <Button disabled={pending || !name.trim() || categories.length >= 4}>
+        <Button className="min-h-11" disabled={pending || !name.trim() || full}>
           Criar categoria
         </Button>
       </form>
@@ -43,9 +47,10 @@ export function CategoryCreator() {
             type="button"
             key={category.id}
             variant="outline"
+            className="mt-2 mr-2 min-h-11"
             disabled={pending}
             onClick={async () => {
-              const result = await activateCategory(category.id);
+              const result = await setCategoryActive(category.id, true);
               setMessage(result.valid ? "Categoria reativada." : result.reason);
             }}
           >
